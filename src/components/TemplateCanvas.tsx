@@ -7,7 +7,10 @@ import { PlayerImage } from './PlayerImage';
 import { HeaderBanner } from './HeaderBanner';
 import { MiniStatBox } from './MiniStatBox';
 import { RatingBadge } from './RatingBadge';
+import { ThemeSwitcher } from './ThemeSwitcher';
+import { ComponentLibrary } from './ComponentLibrary';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
+import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
 
 interface TemplateState {
@@ -129,6 +132,7 @@ const initialState: TemplateState = {
 };
 
 export const TemplateCanvas: React.FC = () => {
+  const { t, isRTL } = useTheme();
   const [state, setState] = useState<TemplateState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -211,7 +215,7 @@ export const TemplateCanvas: React.FC = () => {
     try {
       setIsProcessing(true);
       setProgress(0);
-      toast.info('Processing image...', { duration: 2000 });
+      toast.info(t('upload.processing'), { duration: 2000 });
 
       const img = await loadImage(file);
       setProgress(20);
@@ -229,7 +233,6 @@ export const TemplateCanvas: React.FC = () => {
       console.error('Error processing image:', error);
       toast.error('Failed to remove background. Using original image.');
       
-      // Fallback to original image
       const imageUrl = URL.createObjectURL(file);
       setState(prev => ({
         ...prev,
@@ -239,7 +242,7 @@ export const TemplateCanvas: React.FC = () => {
       setIsProcessing(false);
       setProgress(0);
     }
-  }, []);
+  }, [t]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -249,101 +252,182 @@ export const TemplateCanvas: React.FC = () => {
     e.target.value = '';
   }, [processImage]);
 
+  const handleAddComponent = useCallback((componentId: string) => {
+    const centerX = 350;
+    const centerY = 400;
+    
+    switch (componentId) {
+      case 'circle-lg':
+        setState(prev => ({
+          ...prev,
+          circles: [...prev.circles, {
+            id: `circle-${Date.now()}`,
+            value: '0%',
+            label: 'New Stat',
+            color: 'gold',
+            size: 'lg',
+            position: { x: centerX, y: centerY },
+          }],
+        }));
+        break;
+      case 'circle-md':
+        setState(prev => ({
+          ...prev,
+          circles: [...prev.circles, {
+            id: `circle-${Date.now()}`,
+            value: '0%',
+            label: 'New Stat',
+            color: 'emerald',
+            size: 'md',
+            position: { x: centerX, y: centerY },
+          }],
+        }));
+        break;
+      case 'circle-sm':
+        setState(prev => ({
+          ...prev,
+          circles: [...prev.circles, {
+            id: `circle-${Date.now()}`,
+            value: '0%',
+            label: 'New Stat',
+            color: 'gold',
+            size: 'sm',
+            position: { x: centerX, y: centerY },
+          }],
+        }));
+        break;
+      case 'mini-stat':
+        setState(prev => ({
+          ...prev,
+          miniStats: [...prev.miniStats, {
+            id: `mini-${Date.now()}`,
+            value: '0',
+            label: 'STAT',
+            sublabel: 'label',
+            position: { x: centerX, y: centerY },
+          }],
+        }));
+        break;
+      case 'stat-box':
+        setState(prev => ({
+          ...prev,
+          boxes: [...prev.boxes, {
+            id: `box-${Date.now()}`,
+            value: '0',
+            label: 'NEW',
+            position: { x: centerX, y: centerY },
+          }],
+        }));
+        break;
+      default:
+        toast.info('Component added to canvas');
+    }
+  }, []);
+
   return (
-    <div className="relative w-full h-full min-h-screen flex items-center justify-center p-8">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        accept="image/*"
-        className="hidden"
-      />
-      
-      {/* Canvas */}
-      <div 
-        className="relative w-[750px] h-[850px] gradient-dark rounded-2xl overflow-hidden shadow-2xl border border-border"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 70% 30%, hsl(var(--muted)) 0%, transparent 50%)',
-        }}
-      >
-        {/* Grid overlay for visual effect */}
+    <div className={`relative w-full min-h-screen flex ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+      {/* Sidebar */}
+      <aside className={`w-72 p-4 flex flex-col gap-4 border-border bg-card/50 ${isRTL ? 'border-l' : 'border-r'}`}>
+        <ThemeSwitcher />
+        <ComponentLibrary onAddComponent={handleAddComponent} />
+      </aside>
+
+      {/* Main Canvas */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          className="hidden"
+        />
+        
+        {/* Canvas */}
         <div 
-          className="absolute inset-0 opacity-5"
+          className="relative w-[750px] h-[850px] gradient-dark rounded-2xl overflow-hidden shadow-2xl border border-border"
           style={{
-            backgroundImage: `
-              linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
-              linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
+            backgroundImage: 'radial-gradient(circle at 70% 30%, hsl(var(--muted)) 0%, transparent 50%)',
           }}
-        />
-
-        {/* Header */}
-        <HeaderBanner
-          {...state.header}
-          onPositionChange={(id, pos) => updatePosition('header', id, pos)}
-          onValueChange={handleHeaderChange}
-        />
-
-        {/* Player Image */}
-        <PlayerImage
-          {...state.playerImage}
-          onPositionChange={(id, pos) => updatePosition('playerImage', id, pos)}
-          onSizeChange={handleImageSizeChange}
-          onImageUpload={handleImageUpload}
-          isProcessing={isProcessing}
-          progress={progress}
-        />
-
-        {/* Stat Circles */}
-        {state.circles.map(circle => (
-          <StatCircle
-            key={circle.id}
-            {...circle}
-            onPositionChange={(id, pos) => updatePosition('circles', id, pos)}
-            onValueChange={handleCircleValueChange}
+        >
+          {/* Grid overlay */}
+          <div 
+            className="absolute inset-0 opacity-5"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px',
+            }}
           />
-        ))}
 
-        {/* Stat Boxes */}
-        {state.boxes.map(box => (
-          <StatBox
-            key={box.id}
-            {...box}
-            onPositionChange={(id, pos) => updatePosition('boxes', id, pos)}
-            onValueChange={handleBoxValueChange}
+          {/* Header */}
+          <HeaderBanner
+            {...state.header}
+            onPositionChange={(id, pos) => updatePosition('header', id, pos)}
+            onValueChange={handleHeaderChange}
           />
-        ))}
 
-        {/* Player Name */}
-        <PlayerName
-          {...state.playerName}
-          onPositionChange={(id, pos) => updatePosition('playerName', id, pos)}
-          onValueChange={handlePlayerNameChange}
-        />
-
-        {/* Performance Chart */}
-        <PerformanceChart
-          {...state.chart}
-          onPositionChange={(id, pos) => updatePosition('chart', id, pos)}
-        />
-
-        {/* Mini Stats */}
-        {state.miniStats.map(stat => (
-          <MiniStatBox
-            key={stat.id}
-            {...stat}
-            onPositionChange={(id, pos) => updatePosition('miniStats', id, pos)}
-            onValueChange={handleMiniStatValueChange}
+          {/* Player Image */}
+          <PlayerImage
+            {...state.playerImage}
+            onPositionChange={(id, pos) => updatePosition('playerImage', id, pos)}
+            onSizeChange={handleImageSizeChange}
+            onImageUpload={handleImageUpload}
+            isProcessing={isProcessing}
+            progress={progress}
           />
-        ))}
 
-        {/* Rating Badge */}
-        <RatingBadge
-          {...state.rating}
-          onPositionChange={(id, pos) => updatePosition('rating', id, pos)}
-          onValueChange={handleRatingChange}
-        />
+          {/* Stat Circles */}
+          {state.circles.map(circle => (
+            <StatCircle
+              key={circle.id}
+              {...circle}
+              onPositionChange={(id, pos) => updatePosition('circles', id, pos)}
+              onValueChange={handleCircleValueChange}
+            />
+          ))}
+
+          {/* Stat Boxes */}
+          {state.boxes.map(box => (
+            <StatBox
+              key={box.id}
+              {...box}
+              onPositionChange={(id, pos) => updatePosition('boxes', id, pos)}
+              onValueChange={handleBoxValueChange}
+            />
+          ))}
+
+          {/* Player Name */}
+          <PlayerName
+            {...state.playerName}
+            onPositionChange={(id, pos) => updatePosition('playerName', id, pos)}
+            onValueChange={handlePlayerNameChange}
+          />
+
+          {/* Performance Chart */}
+          <PerformanceChart
+            {...state.chart}
+            onPositionChange={(id, pos) => updatePosition('chart', id, pos)}
+          />
+
+          {/* Mini Stats */}
+          {state.miniStats.map(stat => (
+            <MiniStatBox
+              key={stat.id}
+              {...stat}
+              onPositionChange={(id, pos) => updatePosition('miniStats', id, pos)}
+              onValueChange={handleMiniStatValueChange}
+            />
+          ))}
+
+          {/* Rating Badge */}
+          <RatingBadge
+            {...state.rating}
+            onPositionChange={(id, pos) => updatePosition('rating', id, pos)}
+            onValueChange={handleRatingChange}
+          />
+        </div>
       </div>
     </div>
   );

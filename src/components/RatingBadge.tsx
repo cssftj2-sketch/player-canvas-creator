@@ -45,7 +45,7 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
         onDoubleClick={handleDoubleClick}
       >
         {/* Gold gradient background */}
-        <div className="absolute inset-0 gradient-gold rounded-lg opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/70 rounded-lg opacity-90" />
         
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center p-2">

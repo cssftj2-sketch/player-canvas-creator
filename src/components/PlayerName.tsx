@@ -88,14 +88,14 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
             <span className="text-4xl font-display text-foreground tracking-wide">
               {firstName}
             </span>
-            <span className="text-6xl font-display text-gold tracking-wider leading-none">
+            <span className="text-6xl font-display text-primary tracking-wider leading-none">
               {lastName}
             </span>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-display text-gold border-2 border-gold px-2 rounded">
+              <span className="text-2xl font-display text-primary border-2 border-primary px-2 rounded">
                 {number}
               </span>
-              <span className="text-3xl font-display text-emerald tracking-widest">
+              <span className="text-3xl font-display text-secondary tracking-widest">
                 {country}
               </span>
             </div>

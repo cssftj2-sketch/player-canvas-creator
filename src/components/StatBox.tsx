@@ -66,8 +66,8 @@ export const StatBox: React.FC<StatBoxProps> = ({
           </div>
         ) : (
           <>
-            <span className="text-3xl font-display text-gold">{value}</span>
-            <span className="text-xs font-heading uppercase tracking-wider text-emerald">
+            <span className="text-3xl font-display text-primary">{value}</span>
+            <span className="text-xs font-heading uppercase tracking-wider text-secondary">
               {label}
             </span>
             {subStats && (

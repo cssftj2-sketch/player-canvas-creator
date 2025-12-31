@@ -66,7 +66,7 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
           </div>
         ) : (
           <>
-            <span className="text-2xl font-display text-gold">{value}</span>
+            <span className="text-2xl font-display text-primary">{value}</span>
             <span className="text-[10px] text-foreground/70 uppercase font-heading tracking-wider">
               {label}
             </span>

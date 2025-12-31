@@ -20,16 +20,16 @@ const sizeClasses = {
 
 const colorClasses = {
   gold: {
-    border: 'border-gold',
-    text: 'text-gold',
+    border: 'border-primary',
+    text: 'text-primary',
     glow: 'shadow-gold',
-    ring: 'ring-gold/30',
+    ring: 'ring-primary/30',
   },
   emerald: {
-    border: 'border-emerald',
-    text: 'text-emerald',
+    border: 'border-secondary',
+    text: 'text-secondary',
     glow: 'shadow-emerald',
-    ring: 'ring-emerald/30',
+    ring: 'ring-secondary/30',
   },
 };
 

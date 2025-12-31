@@ -53,7 +53,7 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
               alt="Player"
               className="w-full h-full object-contain drop-shadow-2xl"
               style={{
-                filter: 'drop-shadow(0 0 30px rgba(212, 175, 55, 0.3))',
+                filter: 'drop-shadow(0 0 30px hsl(var(--primary) / 0.3))',
               }}
             />
             <button
@@ -68,7 +68,7 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
           </>
         ) : (
           <div
-            className="w-full h-full border-2 border-dashed border-muted rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-gold transition-colors bg-card/30"
+            className="w-full h-full border-2 border-dashed border-muted rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors bg-card/30"
           >
             {isProcessing ? (
               <div className="flex flex-col items-center gap-3">
@@ -87,7 +87,7 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
                       cy="50"
                       r="45"
                       fill="none"
-                      stroke="hsl(var(--gold))"
+                      stroke="hsl(var(--primary))"
                       strokeWidth="6"
                       strokeLinecap="round"
                       strokeDasharray={2 * Math.PI * 45}
@@ -95,7 +95,7 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
                       className="transition-all duration-300"
                     />
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-sm font-heading text-gold">
+                  <span className="absolute inset-0 flex items-center justify-center text-sm font-heading text-primary">
                     {progress}%
                   </span>
                 </div>

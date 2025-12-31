@@ -47,6 +47,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          glow: "hsl(var(--gold-glow))",
+        },
+        emerald: {
+          DEFAULT: "hsl(var(--emerald))",
+          glow: "hsl(var(--emerald-glow))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -57,6 +65,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      fontFamily: {
+        display: ['Bebas Neue', 'sans-serif'],
+        heading: ['Oswald', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",

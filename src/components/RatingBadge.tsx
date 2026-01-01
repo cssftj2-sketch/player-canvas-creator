@@ -8,6 +8,8 @@ interface RatingBadgeProps {
   position: { x: number; y: number };
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
   onValueChange: (id: string, value: string, label: string) => void;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
 }
 
 export const RatingBadge: React.FC<RatingBadgeProps> = ({
@@ -17,6 +19,8 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
   position,
   onPositionChange,
   onValueChange,
+  onSelect,
+  isSelected,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -31,6 +35,11 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
     onValueChange(id, editValue, editLabel);
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(id);
+  };
+
   return (
     <Rnd
       position={position}
@@ -38,11 +47,12 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className="cursor-move"
+      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
     >
       <div
         className="w-full h-full relative hover:ring-2 ring-gold/30 rounded-lg transition-all"
         onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
       >
         {/* Gold gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/70 rounded-lg opacity-90" />

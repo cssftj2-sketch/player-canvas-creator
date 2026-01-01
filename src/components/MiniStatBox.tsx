@@ -9,6 +9,9 @@ interface MiniStatBoxProps {
   position: { x: number; y: number };
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
   onValueChange: (id: string, value: string, label: string) => void;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
+  customColor?: string;
 }
 
 export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
@@ -19,6 +22,9 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
   position,
   onPositionChange,
   onValueChange,
+  onSelect,
+  isSelected,
+  customColor,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -33,6 +39,11 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
     onValueChange(id, editValue, editLabel);
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(id);
+  };
+
   return (
     <Rnd
       position={position}
@@ -40,11 +51,12 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className="cursor-move"
+      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
     >
       <div
         className="w-full h-full flex flex-col items-center justify-center hover:ring-2 ring-gold/30 rounded-lg transition-all bg-card/40 backdrop-blur-sm border border-border/50 p-2"
         onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
       >
         {isEditing ? (
           <div className="flex flex-col items-center gap-1">
@@ -66,7 +78,12 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
           </div>
         ) : (
           <>
-            <span className="text-2xl font-display text-primary">{value}</span>
+            <span 
+              className="text-2xl font-display text-primary"
+              style={{ color: customColor || undefined }}
+            >
+              {value}
+            </span>
             <span className="text-[10px] text-foreground/70 uppercase font-heading tracking-wider">
               {label}
             </span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Circle, 
   Square, 
@@ -90,14 +90,26 @@ const componentCategories = [
 
 export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddComponent }) => {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
+        setExpandedCategory(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
   return (
-    <div className="w-full bg-card border-b border-border shadow-lg">
-      <div className="flex items-center gap-2 px-4 py-2 overflow-x-auto overflow-y-visible scrollbar-thin">
+    <div ref={toolbarRef} className="w-full bg-card border-b border-border shadow-lg relative z-50">
+      <div className="flex items-center gap-2 px-4 py-2 overflow-x-auto scrollbar-thin" style={{ overflowY: 'visible' }}>
         {componentCategories.map((category) => (
           <div key={category.id} className="relative flex-shrink-0">
             <button
@@ -118,7 +130,10 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
             </button>
 
             {expandedCategory === category.id && (
-              <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-lg shadow-xl z-[100] min-w-[200px] p-2 max-h-[400px] overflow-y-auto">
+              <div 
+                className="absolute top-full left-0 mt-2 bg-card border border-border rounded-lg shadow-xl min-w-[200px] p-2 max-h-[400px] overflow-y-auto"
+                style={{ zIndex: 9999 }}
+              >
                 <div className="grid grid-cols-2 gap-1">
                   {category.items.map((item) => (
                     <button

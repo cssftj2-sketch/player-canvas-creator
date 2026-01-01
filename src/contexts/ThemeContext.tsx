@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 
 export type ColorTheme = 'gold-emerald' | 'blue-silver' | 'red-black' | 'purple-gold' | 'green-white';
 export type Language = 'en' | 'ar';
+export type FontCombination = 'modern' | 'classic' | 'bold' | 'elegant' | 'tech';
 
 export interface CanvasBackground {
   type: 'solid' | 'gradient' | 'radial';
@@ -10,11 +11,47 @@ export interface CanvasBackground {
   angle: number;
 }
 
+interface FontConfig {
+  display: string;
+  heading: string;
+  body: string;
+}
+
+const fontCombinations: Record<FontCombination, FontConfig> = {
+  modern: {
+    display: "'Bebas Neue', sans-serif",
+    heading: "'Oswald', sans-serif",
+    body: "'Inter', sans-serif"
+  },
+  classic: {
+    display: "'Playfair Display', serif",
+    heading: "'Merriweather', serif",
+    body: "'Lora', serif"
+  },
+  bold: {
+    display: "'Anton', sans-serif",
+    heading: "'Montserrat', sans-serif",
+    body: "'Roboto', sans-serif"
+  },
+  elegant: {
+    display: "'Cormorant Garamond', serif",
+    heading: "'Raleway', sans-serif",
+    body: "'Nunito', sans-serif"
+  },
+  tech: {
+    display: "'Orbitron', sans-serif",
+    heading: "'Rajdhani', sans-serif",
+    body: "'IBM Plex Sans', sans-serif"
+  }
+};
+
 interface ThemeContextType {
   colorTheme: ColorTheme;
   setColorTheme: (theme: ColorTheme) => void;
   language: Language;
   setLanguage: (lang: Language) => void;
+  fontCombination: FontCombination;
+  setFontCombination: (combo: FontCombination) => void;
   isRTL: boolean;
   t: (key: string) => string;
   canvasBackground: CanvasBackground;
@@ -33,6 +70,12 @@ const translations: Record<Language, Record<string, string>> = {
     'upload.processing': 'Removing background...',
     'theme.title': 'Theme',
     'language.title': 'Language',
+    'fonts.title': 'Font Style',
+    'fonts.modern': 'Modern',
+    'fonts.classic': 'Classic',
+    'fonts.bold': 'Bold',
+    'fonts.elegant': 'Elegant',
+    'fonts.tech': 'Tech',
     'library.title': 'Components',
     'library.stats': 'Statistics',
     'library.badges': 'Badges',
@@ -63,6 +106,8 @@ const translations: Record<Language, Record<string, string>> = {
     'properties.color': 'Color',
     'properties.size': 'Size',
     'properties.delete': 'Delete',
+    'search.title': 'AI Player Search',
+    'search.placeholder': 'Search player name...',
   },
   ar: {
     'header.title': 'منشئ إحصائيات اللاعب',
@@ -75,6 +120,12 @@ const translations: Record<Language, Record<string, string>> = {
     'upload.processing': 'جاري إزالة الخلفية...',
     'theme.title': 'السمة',
     'language.title': 'اللغة',
+    'fonts.title': 'نمط الخط',
+    'fonts.modern': 'حديث',
+    'fonts.classic': 'كلاسيكي',
+    'fonts.bold': 'عريض',
+    'fonts.elegant': 'أنيق',
+    'fonts.tech': 'تقني',
     'library.title': 'المكونات',
     'library.stats': 'الإحصائيات',
     'library.badges': 'الشارات',
@@ -105,6 +156,8 @@ const translations: Record<Language, Record<string, string>> = {
     'properties.color': 'اللون',
     'properties.size': 'الحجم',
     'properties.delete': 'حذف',
+    'search.title': 'البحث بالذكاء الاصطناعي',
+    'search.placeholder': 'ابحث عن اسم اللاعب...',
   },
 };
 
@@ -113,6 +166,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [colorTheme, setColorTheme] = useState<ColorTheme>('gold-emerald');
   const [language, setLanguage] = useState<Language>('en');
+  const [fontCombination, setFontCombination] = useState<FontCombination>('modern');
   const [canvasBackground, setCanvasBackground] = useState<CanvasBackground>({
     type: 'gradient',
     color1: '#141414',
@@ -135,8 +189,29 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     root.classList.add(`theme-${colorTheme}`);
   }, [colorTheme]);
 
+  // Apply font combination
+  useEffect(() => {
+    const root = document.documentElement;
+    const fonts = fontCombinations[fontCombination];
+    
+    root.style.setProperty('--font-display', fonts.display);
+    root.style.setProperty('--font-heading', fonts.heading);
+    root.style.setProperty('--font-body', fonts.body);
+  }, [fontCombination]);
+
   return (
-    <ThemeContext.Provider value={{ colorTheme, setColorTheme, language, setLanguage, isRTL, t, canvasBackground, setCanvasBackground }}>
+    <ThemeContext.Provider value={{ 
+      colorTheme, 
+      setColorTheme, 
+      language, 
+      setLanguage, 
+      fontCombination,
+      setFontCombination,
+      isRTL, 
+      t, 
+      canvasBackground, 
+      setCanvasBackground 
+    }}>
       <div dir={isRTL ? 'rtl' : 'ltr'}>
         {children}
       </div>
@@ -151,3 +226,5 @@ export const useTheme = () => {
   }
   return context;
 };
+
+export default ThemeProvider;

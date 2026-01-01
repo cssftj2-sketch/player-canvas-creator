@@ -97,7 +97,7 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
 
   return (
     <div className="w-full bg-card border-b border-border shadow-lg">
-      <div className="flex items-center gap-2 px-4 py-2 overflow-x-auto scrollbar-thin">
+      <div className="flex items-center gap-2 px-4 py-2 overflow-x-auto overflow-y-visible scrollbar-thin">
         {componentCategories.map((category) => (
           <div key={category.id} className="relative flex-shrink-0">
             <button
@@ -118,7 +118,7 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
             </button>
 
             {expandedCategory === category.id && (
-              <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-lg shadow-xl z-50 min-w-[200px] p-2">
+              <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-lg shadow-xl z-[100] min-w-[200px] p-2 max-h-[400px] overflow-y-auto">
                 <div className="grid grid-cols-2 gap-1">
                   {category.items.map((item) => (
                     <button

@@ -1,8 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete index.css</title>
+  <style>
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
+/* Import all fonts - Modern, Classic, Bold, Elegant, Tech + Arabic */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Lora:wght@400;600&family=Anton&family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500;700&family=Cormorant+Garamond:wght@400;600;700&family=Raleway:wght@400;600;700&family=Nunito:wght@400;600;700&family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600&display=swap');
 
 @layer base {
   :root {
@@ -42,6 +50,7 @@
     --emerald: 160 84% 39%;
     --emerald-glow: 160 84% 49%;
     
+    /* Default fonts (Modern) */
     --font-display: 'Bebas Neue', sans-serif;
     --font-heading: 'Oswald', sans-serif;
     --font-body: 'Inter', sans-serif;
@@ -177,6 +186,26 @@
   [dir="rtl"] .font-heading {
     font-family: var(--font-arabic);
   }
+
+  /* Scrollbar styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
 }
 
 @layer utilities {
@@ -243,4 +272,71 @@
   .ring-emerald-theme {
     --tw-ring-color: hsl(var(--emerald) / 0.3);
   }
+
+  /* Animation utilities */
+  .animate-in {
+    animation: animate-in 0.3s ease-out;
+  }
+
+  @keyframes animate-in {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .slide-in-from-top-2 {
+    animation: slide-in-from-top 0.3s ease-out;
+  }
+
+  @keyframes slide-in-from-top {
+    from {
+      transform: translateY(-8px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 }
+  </style>
+</head>
+<body>
+  <div style="padding: 2rem; max-width: 800px; margin: 0 auto; background: #1a1a1a; color: #e5e5e5; font-family: 'Inter', sans-serif; border-radius: 8px;">
+    <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: #D4AF37; margin-bottom: 1rem;">Complete index.css File</h1>
+    <p style="margin-bottom: 1rem;">Copy the CSS code from the style section above into your <code style="background: #2a2a2a; padding: 0.2rem 0.5rem; border-radius: 4px;">src/index.css</code> file.</p>
+    
+    <h2 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem;">What's Included:</h2>
+    <ul style="list-style: disc; padding-left: 2rem; line-height: 1.8;">
+      <li><strong>All 5 Font Combinations:</strong> Modern, Classic, Bold, Elegant, Tech</li>
+      <li><strong>Arabic Font Support:</strong> Cairo and Tajawal for RTL</li>
+      <li><strong>Color Themes:</strong> Gold-Emerald, Blue-Silver, Red-Black, Purple-Gold, Green-White</li>
+      <li><strong>Scrollbar Styling:</strong> Custom thin scrollbars</li>
+      <li><strong>Animation Utilities:</strong> Fade-in, slide-in effects</li>
+      <li><strong>CSS Variables:</strong> Dynamic font switching support</li>
+    </ul>
+
+    <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-top: 2rem; border-left: 4px solid #D4AF37;">
+      <p style="margin: 0;"><strong>⚠️ Important:</strong> Replace your entire <code>src/index.css</code> file with the CSS code from above.</p>
+    </div>
+  </div>
+</body>
+</html>

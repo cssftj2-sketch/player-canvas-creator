@@ -10,6 +10,9 @@ interface StatCircleProps {
   position: { x: number; y: number };
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
   onValueChange: (id: string, value: string, label: string) => void;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
+  customColor?: string;
 }
 
 const sizeClasses = {
@@ -48,6 +51,8 @@ export const StatCircle: React.FC<StatCircleProps> = ({
   position,
   onPositionChange,
   onValueChange,
+  onSelect,
+  isSelected,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -62,6 +67,11 @@ export const StatCircle: React.FC<StatCircleProps> = ({
     onValueChange(id, editValue, editLabel);
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(id);
+  };
+
   const percentage = parseInt(value) || 0;
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -73,9 +83,10 @@ export const StatCircle: React.FC<StatCircleProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className="cursor-move"
+      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-full' : ''}`}
     >
       <div
+        onClick={handleClick}
         className={`relative ${sizeClasses[size].container} flex flex-col items-center justify-center rounded-full border-4 ${colorClasses[color].border} ${colorClasses[color].glow} bg-card/80 backdrop-blur-sm transition-all hover:ring-4 ${colorClasses[color].ring}`}
         onDoubleClick={handleDoubleClick}
       >

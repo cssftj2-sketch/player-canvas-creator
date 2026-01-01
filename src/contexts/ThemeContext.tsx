@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export type ColorTheme = 'gold-emerald' | 'blue-silver' | 'red-black' | 'purple-gold' | 'green-white';
 export type Language = 'en' | 'ar';
+
+export interface CanvasBackground {
+  type: 'solid' | 'gradient' | 'radial';
+  color1: string;
+  color2: string;
+  angle: number;
+}
 
 interface ThemeContextType {
   colorTheme: ColorTheme;
@@ -10,6 +17,8 @@ interface ThemeContextType {
   setLanguage: (lang: Language) => void;
   isRTL: boolean;
   t: (key: string) => string;
+  canvasBackground: CanvasBackground;
+  setCanvasBackground: (bg: CanvasBackground) => void;
 }
 
 const translations: Record<Language, Record<string, string>> = {
@@ -29,6 +38,7 @@ const translations: Record<Language, Record<string, string>> = {
     'library.badges': 'Badges',
     'library.charts': 'Charts',
     'library.text': 'Text',
+    'library.shapes': 'Shapes',
     'stat.passes': 'successful passes',
     'stat.tackles': 'tackles won',
     'stat.shots': 'shot accuracy',
@@ -41,6 +51,18 @@ const translations: Record<Language, Record<string, string>> = {
     'performance': 'MATCH PERFORMANCE',
     'matchday': '4TH MATCHDAY RETURN',
     'fantastats': 'FANTASY STATS',
+    'background.title': 'Background',
+    'background.solid': 'Solid',
+    'background.gradient': 'Gradient',
+    'background.radial': 'Radial',
+    'export.title': 'Export',
+    'export.png': 'Download PNG',
+    'export.jpg': 'Download JPG',
+    'export.pdf': 'Download PDF',
+    'properties.title': 'Properties',
+    'properties.color': 'Color',
+    'properties.size': 'Size',
+    'properties.delete': 'Delete',
   },
   ar: {
     'header.title': 'منشئ إحصائيات اللاعب',
@@ -58,6 +80,7 @@ const translations: Record<Language, Record<string, string>> = {
     'library.badges': 'الشارات',
     'library.charts': 'الرسوم البيانية',
     'library.text': 'النص',
+    'library.shapes': 'الأشكال',
     'stat.passes': 'تمريرات ناجحة',
     'stat.tackles': 'تدخلات فائزة',
     'stat.shots': 'دقة التسديد',
@@ -70,6 +93,18 @@ const translations: Record<Language, Record<string, string>> = {
     'performance': 'أداء المباراة',
     'matchday': 'الجولة الرابعة',
     'fantastats': 'إحصائيات فانتازي',
+    'background.title': 'الخلفية',
+    'background.solid': 'صلب',
+    'background.gradient': 'تدرج',
+    'background.radial': 'شعاعي',
+    'export.title': 'تصدير',
+    'export.png': 'تحميل PNG',
+    'export.jpg': 'تحميل JPG',
+    'export.pdf': 'تحميل PDF',
+    'properties.title': 'الخصائص',
+    'properties.color': 'اللون',
+    'properties.size': 'الحجم',
+    'properties.delete': 'حذف',
   },
 };
 
@@ -78,6 +113,12 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [colorTheme, setColorTheme] = useState<ColorTheme>('gold-emerald');
   const [language, setLanguage] = useState<Language>('en');
+  const [canvasBackground, setCanvasBackground] = useState<CanvasBackground>({
+    type: 'gradient',
+    color1: '#141414',
+    color2: '#0a0a0a',
+    angle: 180,
+  });
 
   const isRTL = language === 'ar';
 
@@ -85,9 +126,18 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return translations[language][key] || key;
   };
 
+  // Apply theme class to document
+  useEffect(() => {
+    const root = document.documentElement;
+    // Remove all theme classes
+    root.classList.remove('theme-gold-emerald', 'theme-blue-silver', 'theme-red-black', 'theme-purple-gold', 'theme-green-white');
+    // Add current theme class
+    root.classList.add(`theme-${colorTheme}`);
+  }, [colorTheme]);
+
   return (
-    <ThemeContext.Provider value={{ colorTheme, setColorTheme, language, setLanguage, isRTL, t }}>
-      <div dir={isRTL ? 'rtl' : 'ltr'} className={`theme-${colorTheme}`}>
+    <ThemeContext.Provider value={{ colorTheme, setColorTheme, language, setLanguage, isRTL, t, canvasBackground, setCanvasBackground }}>
+      <div dir={isRTL ? 'rtl' : 'ltr'}>
         {children}
       </div>
     </ThemeContext.Provider>

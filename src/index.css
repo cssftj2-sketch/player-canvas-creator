@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Complete index.css</title>
-  <style>
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -317,26 +311,3 @@
     }
   }
 }
-  </style>
-</head>
-<body>
-  <div style="padding: 2rem; max-width: 800px; margin: 0 auto; background: #1a1a1a; color: #e5e5e5; font-family: 'Inter', sans-serif; border-radius: 8px;">
-    <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: #D4AF37; margin-bottom: 1rem;">Complete index.css File</h1>
-    <p style="margin-bottom: 1rem;">Copy the CSS code from the style section above into your <code style="background: #2a2a2a; padding: 0.2rem 0.5rem; border-radius: 4px;">src/index.css</code> file.</p>
-    
-    <h2 style="font-family: 'Oswald', sans-serif; font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem;">What's Included:</h2>
-    <ul style="list-style: disc; padding-left: 2rem; line-height: 1.8;">
-      <li><strong>All 5 Font Combinations:</strong> Modern, Classic, Bold, Elegant, Tech</li>
-      <li><strong>Arabic Font Support:</strong> Cairo and Tajawal for RTL</li>
-      <li><strong>Color Themes:</strong> Gold-Emerald, Blue-Silver, Red-Black, Purple-Gold, Green-White</li>
-      <li><strong>Scrollbar Styling:</strong> Custom thin scrollbars</li>
-      <li><strong>Animation Utilities:</strong> Fade-in, slide-in effects</li>
-      <li><strong>CSS Variables:</strong> Dynamic font switching support</li>
-    </ul>
-
-    <div style="background: #2a2a2a; padding: 1rem; border-radius: 8px; margin-top: 2rem; border-left: 4px solid #D4AF37;">
-      <p style="margin: 0;"><strong>⚠️ Important:</strong> Replace your entire <code>src/index.css</code> file with the CSS code from above.</p>
-    </div>
-  </div>
-</body>
-</html>

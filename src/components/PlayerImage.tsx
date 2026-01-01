@@ -12,6 +12,8 @@ interface PlayerImageProps {
   onImageUpload: () => void;
   isProcessing: boolean;
   progress: number;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
 }
 
 export const PlayerImage: React.FC<PlayerImageProps> = ({
@@ -24,7 +26,17 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
   onImageUpload,
   isProcessing,
   progress,
+  onSelect,
+  isSelected,
 }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(id);
+    if (!imageUrl) {
+      onImageUpload();
+    }
+  };
+
   return (
     <Rnd
       position={position}
@@ -38,13 +50,13 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
         onPositionChange(id, pos);
       }}
       bounds="parent"
-      className="cursor-move"
+      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
       minWidth={100}
       minHeight={100}
     >
       <div
         className="w-full h-full flex items-center justify-center relative group"
-        onClick={!imageUrl ? onImageUpload : undefined}
+        onClick={handleClick}
       >
         {imageUrl ? (
           <>

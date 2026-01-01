@@ -8,6 +8,8 @@ interface HeaderBannerProps {
   position: { x: number; y: number };
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
   onValueChange: (id: string, title: string, subtitle: string) => void;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
 }
 
 export const HeaderBanner: React.FC<HeaderBannerProps> = ({
@@ -17,6 +19,8 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
   position,
   onPositionChange,
   onValueChange,
+  onSelect,
+  isSelected,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
@@ -31,6 +35,11 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
     onValueChange(id, editTitle, editSubtitle);
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(id);
+  };
+
   return (
     <Rnd
       position={position}
@@ -38,11 +47,12 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className="cursor-move"
+      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded' : ''}`}
     >
       <div
         className="relative hover:ring-2 ring-gold/30 rounded transition-all"
         onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
       >
         <div className="bg-secondary py-1 px-4 inline-block skew-x-[-5deg]">
           {isEditing ? (

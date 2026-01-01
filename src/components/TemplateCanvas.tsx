@@ -359,7 +359,8 @@ export const TemplateCanvas: React.FC = () => {
       const barIdx = prev.progressBars.findIndex(p => p.id === selectedComponent);
       if (barIdx !== -1) {
         const updated = [...prev.progressBars];
-        updated[barIdx] = { ...updated[barIdx], ...data, value: parseInt(data.value || '0') };
+        const { size, ...restData } = data as any;
+        updated[barIdx] = { ...updated[barIdx], ...restData, value: parseInt(data.value || updated[barIdx].value.toString()) };
         return { ...prev, progressBars: updated };
       }
 
@@ -367,7 +368,8 @@ export const TemplateCanvas: React.FC = () => {
       const dividerIdx = prev.dividers.findIndex(d => d.id === selectedComponent);
       if (dividerIdx !== -1) {
         const updated = [...prev.dividers];
-        updated[dividerIdx] = { ...updated[dividerIdx], ...data };
+        const { size, ...restData } = data as any;
+        updated[dividerIdx] = { ...updated[dividerIdx], ...restData };
         return { ...prev, dividers: updated };
       }
 

@@ -8,6 +8,8 @@ interface PerformanceChartProps {
   title: string;
   position: { x: number; y: number };
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
 }
 
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({
@@ -16,7 +18,14 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   title,
   position,
   onPositionChange,
+  onSelect,
+  isSelected,
 }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(id);
+  };
+
   return (
     <Rnd
       position={position}
@@ -24,9 +33,12 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className="cursor-move"
+      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
     >
-      <div className="w-full h-full bg-card/60 backdrop-blur-sm border border-border rounded-lg p-3 hover:ring-2 ring-gold/30 transition-all">
+      <div 
+        className="w-full h-full bg-card/60 backdrop-blur-sm border border-border rounded-lg p-3 hover:ring-2 ring-gold/30 transition-all"
+        onClick={handleClick}
+      >
         <h4 className="text-xs font-heading uppercase text-foreground/80 mb-2 tracking-wider">
           {title}
         </h4>

@@ -10,6 +10,8 @@ interface PlayerNameProps {
   position: { x: number; y: number };
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
   onValueChange: (id: string, data: { firstName: string; lastName: string; number: string; country: string }) => void;
+  onSelect: (id: string) => void;
+  isSelected: boolean;
 }
 
 export const PlayerName: React.FC<PlayerNameProps> = ({
@@ -21,6 +23,8 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
   position,
   onPositionChange,
   onValueChange,
+  onSelect,
+  isSelected,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ firstName, lastName, number, country });
@@ -34,6 +38,11 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
     onValueChange(id, editData);
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect(id);
+  };
+
   return (
     <Rnd
       position={position}
@@ -41,11 +50,12 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className="cursor-move"
+      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
     >
       <div
         className="flex flex-col items-start hover:ring-2 ring-gold/30 rounded-lg p-2 transition-all"
         onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
       >
         {isEditing ? (
           <div className="flex flex-col gap-1">

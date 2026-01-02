@@ -1,0 +1,4 @@
+project_id = "ppknuacayxupsmnifhhv"
+
+[functions.search-player]
+verify_jwt = false

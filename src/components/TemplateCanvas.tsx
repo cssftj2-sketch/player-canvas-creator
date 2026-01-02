@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // For smooth transitions
+import { motion, AnimatePresence } from 'framer-motion';
 import { StatCircle } from './StatCircle';
 import { StatBox } from './StatBox';
 import { PlayerName } from './PlayerName';
@@ -23,6 +23,7 @@ import { FontSelector } from './FontSelector';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
+import { RotateCcw, Plus } from 'lucide-react'; // Added for New Project icon
 
 // --- Interfaces ---
 interface CircleState {
@@ -209,20 +210,26 @@ export const TemplateCanvas: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  // --- NEW PROJECT FEATURE ---
+  const handleNewProject = () => {
+    if (window.confirm("Are you sure you want to start a new project? All current progress will be lost.")) {
+      setState(initialState);
+      setSelectedComponent(null);
+      toast.success("New project created successfully");
+    }
+  };
+
   // --- RESPONSIVE FIX: Auto-scale canvas to fit screen ---
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1200) {
-        const scale = Math.min((window.innerWidth - 400) / 800, 1);
-        setZoomScale(scale < 0.5 ? 0.5 : scale);
-      } else {
-        setZoomScale(1);
-      }
+      const containerWidth = window.innerWidth - (selectedComponent ? 650 : 350);
+      const scale = Math.min(containerWidth / 750, 1);
+      setZoomScale(scale < 0.4 ? 0.4 : scale);
     };
     window.addEventListener('resize', handleResize);
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [selectedComponent]);
 
   const getBackgroundStyle = () => {
     switch (canvasBackground.type) {
@@ -238,7 +245,6 @@ export const TemplateCanvas: React.FC = () => {
   };
 
   const handleCanvasClick = (e: React.MouseEvent) => {
-    // Only deselect if clicking the canvas background itself
     if (e.target === e.currentTarget) {
       setSelectedComponent(null);
     }
@@ -556,29 +562,42 @@ export const TemplateCanvas: React.FC = () => {
         setState(prev => ({ ...prev, textLabels: [...prev.textLabels, { id: `text-${Date.now()}`, text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold', position: { x: centerX, y: centerY } }] }));
         break;
       default:
-        // Handle Icons
         if (componentId.startsWith('icon-')) {
           const iconType = componentId.replace('icon-', '') as IconType;
           setState(prev => ({ ...prev, iconBadges: [...prev.iconBadges, { id: `icon-${Date.now()}`, icon: iconType, color: 'gold', size: 'md', position: { x: centerX, y: centerY } }] }));
         }
     }
-    toast.success('Component added');
   }, []);
 
   return (
-    // FIX 1 & 5: Main container uses flex-col to keep Toolbar at top and handles RTL responsive layouts
-    <div className={`flex flex-col h-screen w-full bg-background overflow-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
+    // FIX: Container structure to prevent overlap and handle sidebar fixed height
+    <div className={`flex flex-col h-screen w-full bg-[#121212] overflow-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
       
-      {/* FIX 1: Toolbar is now a direct child of the flex container with proper z-index */}
-      <div className="z-[60] border-b bg-card relative shadow-sm">
+      {/* TOOLBAR: High Z-Index to prevent overlap */}
+      <div className="z-[100] border-b border-white/10 bg-[#1A1A1A] relative h-16 shrink-0 flex items-center justify-between px-4">
         <HorizontalToolbar onAddComponent={handleAddComponent} />
+        
+        {/* NEW PROJECT BUTTON */}
+        <button 
+          onClick={handleNewProject}
+          className="flex items-center gap-2 px-3 py-1.5 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-600/20 rounded transition-all text-sm font-medium"
+        >
+          <RotateCcw size={16} />
+          New Project
+        </button>
       </div>
 
       <div className="flex flex-1 overflow-hidden relative">
         
-        {/* FIX 2: Left Sidebar with proper overflow and scroll */}
-        <aside className={`w-72 border-r bg-card/50 flex flex-col overflow-hidden shrink-0 z-40`}>
-          <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
+        {/* LEFT SIDEBAR: "DONT WANNA ASIDEBARE SCROLLING" -> Scrollbar Hidden */}
+        <aside className="w-80 border-r border-white/10 bg-[#1A1A1A] flex flex-col overflow-hidden shrink-0">
+          <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-8 select-none">
+            {/* Using a custom utility or inline style to hide scrollbar */}
+            <style dangerouslySetInnerHTML={{__html: `
+              .no-scrollbar::-webkit-scrollbar { display: none; }
+              .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}} />
+            
             <ThemeSwitcher />
             <FontSelector />
             <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />
@@ -587,38 +606,36 @@ export const TemplateCanvas: React.FC = () => {
           </div>
         </aside>
 
-        {/* FIX 4: Main Workspace - Canvas properly centered and scrollable */}
+        {/* MAIN WORKSPACE: Centered Canvas */}
         <main 
-          className="flex-1 overflow-auto bg-muted/30 flex items-start justify-center p-12 relative"
+          className="flex-1 overflow-auto bg-[#0a0a0a] flex items-center justify-center p-10 relative scrollbar-thin scrollbar-thumb-white/10"
           onClick={handleCanvasClick}
         >
           <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
 
-          {/* FIX 5: Canvas wrapper with scaling for smaller screens */}
+          {/* RESPONSIVE SCALE WRAPPER */}
           <div 
             style={{ 
               transform: `scale(${zoomScale})`, 
-              transformOrigin: 'top center',
+              transformOrigin: 'center center',
               transition: 'transform 0.2s ease-out'
             }}
-            className="shrink-0"
+            className="shrink-0 flex items-center justify-center"
           >
             <div 
               ref={canvasRef}
-              className="relative w-[750px] h-[850px] rounded-2xl overflow-hidden shadow-2xl border bg-black select-none"
+              className="relative w-[750px] h-[850px] rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/5 select-none"
               style={getBackgroundStyle()}
               onClick={handleCanvasClick}
             >
-              {/* Grid Overlay */}
-              <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+              {/* Grid Background Overlay */}
+              <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
 
-              {/* Header */}
+              {/* Components */}
               <HeaderBanner {...state.header} onPositionChange={(id, pos) => updatePosition('header', id, pos)} onValueChange={handleHeaderChange} onSelect={handleSelectComponent} isSelected={selectedComponent === state.header.id} />
 
-              {/* Player Image */}
               <PlayerImage {...state.playerImage} onPositionChange={(id, pos) => updatePosition('playerImage', id, pos)} onSizeChange={handleImageSizeChange} onImageUpload={handleImageUpload} isProcessing={isProcessing} progress={progress} onSelect={handleSelectComponent} isSelected={selectedComponent === state.playerImage.id} removeBackgroundEnabled={removeBackgroundEnabled} onToggleRemoveBackground={() => setRemoveBackgroundEnabled(!removeBackgroundEnabled)} />
 
-              {/* Map all components - FIX 6: Selection state passed to each */}
               {state.circles.map(c => <StatCircle key={c.id} {...c} onPositionChange={(id, pos) => updatePosition('circles', id, pos)} onValueChange={handleCircleValueChange} onSelect={handleSelectComponent} isSelected={selectedComponent === c.id} />)}
               {state.boxes.map(b => <StatBox key={b.id} {...b} onPositionChange={(id, pos) => updatePosition('boxes', id, pos)} onValueChange={handleBoxValueChange} onSelect={handleSelectComponent} isSelected={selectedComponent === b.id} />)}
               
@@ -641,17 +658,17 @@ export const TemplateCanvas: React.FC = () => {
           </div>
         </main>
 
-        {/* FIX 3: Right Sidebar with Smooth Transitions (AnimatePresence) */}
+        {/* RIGHT SIDEBAR: Property Editor with Smooth Transitions */}
         <AnimatePresence mode="wait">
           {selectedComponent && (
             <motion.aside
-              initial={{ x: 320, opacity: 0 }}
+              initial={{ x: 350, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 320, opacity: 0 }}
+              exit={{ x: 350, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-80 border-l bg-card shadow-xl z-50 flex flex-col shrink-0 overflow-hidden"
+              className="w-80 border-l border-white/10 bg-[#1A1A1A] z-50 flex flex-col shrink-0 overflow-hidden"
             >
-              <div className="flex-1 overflow-y-auto scrollbar-thin">
+              <div className="flex-1 overflow-y-auto no-scrollbar">
                 <PropertyEditor
                   component={getSelectedComponentData()}
                   onUpdate={handleUpdateComponent}

@@ -1,232 +1,323 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// =====================================================
+// AI PLAYER SEARCH — PRODUCTION EDGE FUNCTION
+// Includes AFCON Match-Specific Stats Extension
+// =====================================================
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
+import OpenAI from "https://esm.sh/openai@4.24.1";
+import { corsHeaders } from "../_shared/cors.ts";
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+// =====================================================
+// ENV VALIDATION
+// =====================================================
+
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+
+if (!OPENAI_API_KEY) {
+  throw new Error("Missing OPENAI_API_KEY environment variable");
+}
+
+const openai = new OpenAI({
+  apiKey: OPENAI_API_KEY,
+});
+
+// =====================================================
+// TYPES
+// =====================================================
+
+interface PlayerStats {
+  appearances: number;
+  minutesPlayed: number;
+  goals: number;
+  assists: number;
+  shotsOnTarget: number;
+  keyPasses: number;
+  dribblesCompleted: number;
+  tacklesWon: number;
+  interceptions: number;
+  duelsWon: number;
+  foulsWon: number;
+  xG: number;
+  xA: number;
+  passAccuracy: number;
+  rating: number;
+}
+
+interface AfconMatchStats {
+  competition: "AFCON";
+  match: string;
+  minutesPlayed: number;
+  goals: number;
+  assists: number;
+  shots: number;
+  shotsOnTarget: number;
+  keyPasses: number;
+  chancesCreated: number;
+  dribblesCompleted: number;
+  duelsWon: number;
+  tackles: number;
+  interceptions: number;
+  foulsWon: number;
+  passes: number;
+  passAccuracy: number;
+  xG: number;
+  xA: number;
+  manOfTheMatch: boolean;
+}
+
+interface PlayerResponse {
+  name: string;
+  position: string;
+  club: string;
+  nationality: string;
+  age: number;
+  imageQuery: string;
+  stats: PlayerStats;
+  afconMatch?: AfconMatchStats | null;
+}
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+function safeNumber(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function safeString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+// =====================================================
+// PROMPT
+// =====================================================
+
+const systemPrompt = `
+You are a professional football analytics engine.
+
+CRITICAL RULES:
+- RETURN ONLY VALID JSON
+- NO MARKDOWN
+- NO COMMENTS
+- NO EXPLANATIONS
+- DATA MUST BE REALISTIC
+- NEVER HALLUCINATE IMPOSSIBLE STATS
+- IF AFCON MATCH IS RELEVANT, INCLUDE IT
+
+JSON FORMAT:
+{
+  "name": "",
+  "position": "",
+  "club": "",
+  "nationality": "",
+  "age": 0,
+  "imageQuery": "",
+  "stats": {
+    "appearances": 0,
+    "minutesPlayed": 0,
+    "goals": 0,
+    "assists": 0,
+    "shotsOnTarget": 0,
+    "keyPasses": 0,
+    "dribblesCompleted": 0,
+    "tacklesWon": 0,
+    "interceptions": 0,
+    "duelsWon": 0,
+    "foulsWon": 0,
+    "xG": 0,
+    "xA": 0,
+    "passAccuracy": 0,
+    "rating": 7.0
+  },
+  "afconMatch": {
+    "competition": "AFCON",
+    "match": "Algeria vs Guinea",
+    "minutesPlayed": 0,
+    "goals": 0,
+    "assists": 0,
+    "shots": 0,
+    "shotsOnTarget": 0,
+    "keyPasses": 0,
+    "chancesCreated": 0,
+    "dribblesCompleted": 0,
+    "duelsWon": 0,
+    "tackles": 0,
+    "interceptions": 0,
+    "foulsWon": 0,
+    "passes": 0,
+    "passAccuracy": 0,
+    "xG": 0,
+    "xA": 0,
+    "manOfTheMatch": false
+  }
+}
+`;
+
+// =====================================================
+// MAIN HANDLER
+// =====================================================
+
+serve(async (req: Request) => {
+  // -------------------------------
+  // CORS PREFLIGHT
+  // -------------------------------
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { playerName } = await req.json();
-    
-    if (!playerName || typeof playerName !== 'string') {
+    // -------------------------------
+    // METHOD GUARD
+    // -------------------------------
+    if (req.method !== "POST") {
       return new Response(
-        JSON.stringify({ error: 'Player name is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: "Method not allowed" }),
+        { status: 405, headers: corsHeaders }
       );
     }
 
-    console.log(`Searching for player: ${playerName}`);
+    // -------------------------------
+    // BODY PARSING
+    // -------------------------------
+    const body = await req.json().catch(() => null);
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!body || typeof body.query !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Invalid request body" }),
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const systemPrompt = `You are a football/soccer statistics expert with comprehensive knowledge of players worldwide. When given a player name, provide their most recent and accurate statistics.
+    const query = body.query.trim();
 
-CRITICAL INSTRUCTIONS:
-1. Return ONLY a valid JSON object - no markdown, no explanation, no backticks, no preamble
-2. Use real, current data for known professional players
-3. For lesser-known players, provide realistic estimates based on their league/position
-4. Include current season statistics when possible
-5. DO NOT wrap the JSON in markdown code blocks
+    if (query.length < 2) {
+      return new Response(
+        JSON.stringify({ error: "Query too short" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
-Required JSON structure (return EXACTLY this format):
-{
-  "name": "Full Player Name",
-  "position": "Primary Position",
-  "club": "Current Club",
-  "nationality": "Country",
-  "age": 25,
-  "stats": {
-    "goals": 0,
-    "assists": 0,
-    "appearances": 0,
-    "rating": 7.0,
-    "passAccuracy": 85,
-    "tacklesWon": 0
-  }
-}
-
-Position guidelines:
-- Use one of: Forward, Attacking Midfielder, Midfielder, Defensive Midfielder, Defender, Center Back, Goalkeeper
-- Be specific when known
-
-Stats guidelines by position:
-- Forwards: High goals (10-30), moderate assists (5-15), low tackles (5-20)
-- Midfielders: Moderate goals (3-15), high assists (5-20), moderate tackles (30-70)
-- Defenders: Low goals (0-5), low assists (0-5), high tackles (50-100)
-- Goalkeepers: No goals/assists, minimal tackles
-
-- Rating: Average match rating on 0-10 scale (typical range: 6.5-8.5)
-- PassAccuracy: Percentage 0-100 (typical range: 75-92)
-- Appearances: Matches played this season (typical range: 10-40)`;
-
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { 
-            role: 'user', 
-            content: `Find current statistics for football player: "${playerName}". Return ONLY the JSON object with no markdown formatting.` 
-          }
-        ],
-        temperature: 0.3,
-      }),
+    // -------------------------------
+    // OPENAI CALL
+    // -------------------------------
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.3,
+      max_tokens: 700,
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: `Provide professional football data for: ${query}`,
+        },
+      ],
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'AI credits exhausted. Please add funds.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 401) {
-        return new Response(
-          JSON.stringify({ error: 'API authentication failed.' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      throw new Error(`AI gateway error: ${response.status}`);
+    const raw = completion.choices[0]?.message?.content;
+
+    if (!raw) {
+      throw new Error("Empty AI response");
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    
-    if (!content) {
-      throw new Error('No content in AI response');
-    }
+    // -------------------------------
+    // JSON PARSE
+    // -------------------------------
+    let parsed: PlayerResponse;
 
-    console.log('AI response:', content);
-
-    // Parse the JSON response from the AI
-    let playerData;
     try {
-      // Clean the response - remove any markdown formatting
-      let cleanContent = content.trim();
-      
-      // Remove markdown code blocks (```json and ```)
-      cleanContent = cleanContent.replace(/```json\s*/gi, '');
-      cleanContent = cleanContent.replace(/```\s*/g, '');
-      
-      // Remove any leading/trailing whitespace
-      cleanContent = cleanContent.trim();
-      
-      // Try to find JSON object if wrapped in text
-      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        cleanContent = jsonMatch[0];
-      }
-      
-      // Parse the JSON
-      playerData = JSON.parse(cleanContent);
-      
-      // Validate required fields
-      if (!playerData.name || !playerData.stats) {
-        throw new Error('Invalid player data structure');
-      }
-      
-      // Ensure all stats are numbers with proper defaults
-      playerData.stats = {
-        goals: Number(playerData.stats.goals) || 0,
-        assists: Number(playerData.stats.assists) || 0,
-        appearances: Number(playerData.stats.appearances) || 0,
-        rating: Number(playerData.stats.rating) || 7.0,
-        passAccuracy: Number(playerData.stats.passAccuracy) || 80,
-        tacklesWon: Number(playerData.stats.tacklesWon) || 0,
-      };
-      
-      // Ensure age is a number
-      playerData.age = Number(playerData.age) || 25;
-      
-      // Ensure strings are present
-      playerData.position = playerData.position || 'Midfielder';
-      playerData.club = playerData.club || 'Unknown Club';
-      playerData.nationality = playerData.nationality || 'Unknown';
-      
-      console.log('Successfully parsed player data:', playerData);
-      
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      console.error('Raw content:', content);
-      
-      // Enhanced fallback with position-appropriate stats
-      const positions = ['Forward', 'Attacking Midfielder', 'Midfielder', 'Defensive Midfielder', 'Defender', 'Goalkeeper'];
-      const randomPosition = positions[Math.floor(Math.random() * positions.length)];
-      
-      // Position-appropriate stat ranges
-      const statsByPosition: Record<string, { goals: number[], assists: number[], tackles: number[], pass: number[] }> = {
-        'Forward': { goals: [10, 25], assists: [5, 15], tackles: [5, 20], pass: [70, 82] },
-        'Attacking Midfielder': { goals: [5, 15], assists: [8, 20], tackles: [15, 35], pass: [78, 88] },
-        'Midfielder': { goals: [3, 10], assists: [5, 15], tackles: [30, 60], pass: [80, 92] },
-        'Defensive Midfielder': { goals: [1, 5], assists: [2, 8], tackles: [50, 80], pass: [82, 91] },
-        'Defender': { goals: [0, 4], assists: [0, 5], tackles: [60, 100], pass: [80, 90] },
-        'Goalkeeper': { goals: [0, 0], assists: [0, 1], tackles: [0, 5], pass: [50, 70] },
-      };
-      
-      const statRange = statsByPosition[randomPosition] || statsByPosition['Midfielder'];
-      
-      playerData = {
-        name: playerName,
-        position: randomPosition,
-        club: 'Unknown Club',
-        nationality: 'Unknown',
-        age: Math.floor(Math.random() * 10) + 20,
-        stats: {
-          goals: Math.floor(Math.random() * (statRange.goals[1] - statRange.goals[0] + 1)) + statRange.goals[0],
-          assists: Math.floor(Math.random() * (statRange.assists[1] - statRange.assists[0] + 1)) + statRange.assists[0],
-          appearances: Math.floor(Math.random() * 20) + 15,
-          rating: parseFloat((Math.random() * 1.5 + 6.5).toFixed(1)),
-          passAccuracy: Math.floor(Math.random() * (statRange.pass[1] - statRange.pass[0] + 1)) + statRange.pass[0],
-          tacklesWon: Math.floor(Math.random() * (statRange.tackles[1] - statRange.tackles[0] + 1)) + statRange.tackles[0],
-        }
-      };
-      
-      console.log('Using fallback data:', playerData);
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new Error("Invalid JSON returned by AI");
     }
 
-    console.log('Returning player data:', playerData);
+    // -------------------------------
+    // SANITIZATION — CORE PLAYER
+    // -------------------------------
+    const player: PlayerResponse = {
+      name: safeString(parsed.name),
+      position: safeString(parsed.position),
+      club: safeString(parsed.club),
+      nationality: safeString(parsed.nationality),
+      age: clamp(safeNumber(parsed.age), 15, 45),
+      imageQuery: safeString(parsed.imageQuery),
+      stats: {
+        appearances: safeNumber(parsed.stats?.appearances),
+        minutesPlayed: safeNumber(parsed.stats?.minutesPlayed),
+        goals: safeNumber(parsed.stats?.goals),
+        assists: safeNumber(parsed.stats?.assists),
+        shotsOnTarget: safeNumber(parsed.stats?.shotsOnTarget),
+        keyPasses: safeNumber(parsed.stats?.keyPasses),
+        dribblesCompleted: safeNumber(parsed.stats?.dribblesCompleted),
+        tacklesWon: safeNumber(parsed.stats?.tacklesWon),
+        interceptions: safeNumber(parsed.stats?.interceptions),
+        duelsWon: safeNumber(parsed.stats?.duelsWon),
+        foulsWon: safeNumber(parsed.stats?.foulsWon),
+        xG: safeNumber(parsed.stats?.xG),
+        xA: safeNumber(parsed.stats?.xA),
+        passAccuracy: clamp(safeNumber(parsed.stats?.passAccuracy, 80), 50, 100),
+        rating: clamp(safeNumber(parsed.stats?.rating, 7), 0, 10),
+      },
+    };
 
-    return new Response(
-      JSON.stringify({ 
-        player: playerData,
-        source: 'ai-powered',
-        timestamp: new Date().toISOString()
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // -------------------------------
+    // SANITIZATION — AFCON MATCH
+    // -------------------------------
+    if (parsed.afconMatch) {
+      const m = parsed.afconMatch;
 
+      player.afconMatch = {
+        competition: "AFCON",
+        match: safeString(m.match, "Algeria vs Guinea"),
+        minutesPlayed: safeNumber(m.minutesPlayed),
+        goals: safeNumber(m.goals),
+        assists: safeNumber(m.assists),
+        shots: safeNumber(m.shots),
+        shotsOnTarget: safeNumber(m.shotsOnTarget),
+        keyPasses: safeNumber(m.keyPasses),
+        chancesCreated: safeNumber(m.chancesCreated),
+        dribblesCompleted: safeNumber(m.dribblesCompleted),
+        duelsWon: safeNumber(m.duelsWon),
+        tackles: safeNumber(m.tackles),
+        interceptions: safeNumber(m.interceptions),
+        foulsWon: safeNumber(m.foulsWon),
+        passes: safeNumber(m.passes),
+        passAccuracy: clamp(safeNumber(m.passAccuracy, 80), 50, 100),
+        xG: safeNumber(m.xG),
+        xA: safeNumber(m.xA),
+        manOfTheMatch: Boolean(m.manOfTheMatch),
+      };
+    } else {
+      player.afconMatch = null;
+    }
+
+    // -------------------------------
+    // RESPONSE
+    // -------------------------------
+    return new Response(JSON.stringify(player), {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+      },
+    });
   } catch (error) {
-    console.error('Error in search-player function:', error);
+    // -------------------------------
+    // ERROR HANDLER
+    // -------------------------------
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        details: 'Please check server logs for more information'
+      JSON.stringify({
+        error: "AI Player Search failed",
+        message: error instanceof Error ? error.message : "Unknown error",
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      {
+        status: 500,
+        headers: corsHeaders,
+      }
     );
   }
 });

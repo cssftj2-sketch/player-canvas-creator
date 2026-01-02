@@ -17,7 +17,7 @@ import { Divider } from './Divider';
 import { IconBadge, IconType } from './IconBadge';
 import { TextLabel } from './TextLabel';
 import { HorizontalToolbar } from './HorizontalToolbar';
-import { AIPlayerSearch } from './AIPlayerSearch';
+import AIPlayerSearch from './AIPlayerSearch';
 import { FontSelector } from './FontSelector';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme } from '@/contexts/ThemeContext';

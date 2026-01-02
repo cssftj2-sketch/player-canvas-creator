@@ -107,21 +107,26 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
+  const handleItemClick = (itemId: string) => {
+    onAddComponent(itemId);
+    setExpandedCategory(null);
+  };
+
   return (
-    <div ref={toolbarRef} className="w-full bg-card border-b border-border shadow-lg relative z-50">
-      <div className="flex items-center gap-2 px-4 py-2 overflow-x-auto scrollbar-thin" style={{ overflowY: 'visible' }}>
+    <div ref={toolbarRef} className="w-full bg-card border-b border-border shadow-lg relative" style={{ zIndex: 9999 }}>
+      <div className="flex items-center gap-1 px-2 py-1.5 overflow-x-auto scrollbar-thin">
         {componentCategories.map((category) => (
           <div key={category.id} className="relative flex-shrink-0">
             <button
               onClick={() => toggleCategory(category.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-all text-xs ${
                 expandedCategory === category.id
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50 hover:text-foreground'
               }`}
             >
-              {category.icon}
-              <span className="text-sm font-heading">{category.label}</span>
+              {React.cloneElement(category.icon as React.ReactElement, { className: 'w-3.5 h-3.5' })}
+              <span className="font-medium">{category.label}</span>
               {expandedCategory === category.id ? (
                 <ChevronUp className="w-3 h-3" />
               ) : (
@@ -131,23 +136,27 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
 
             {expandedCategory === category.id && (
               <div 
-                className="absolute top-full left-0 mt-2 bg-card border border-border rounded-lg shadow-xl min-w-[200px] p-2 max-h-[400px] overflow-y-auto"
-                style={{ zIndex: 9999 }}
+                className="fixed mt-1 bg-card border border-border rounded-lg shadow-2xl min-w-[180px] p-1.5 max-h-[350px] overflow-y-auto"
+                style={{ 
+                  zIndex: 99999,
+                  top: 'auto',
+                  left: 'auto',
+                }}
               >
                 <div className="grid grid-cols-2 gap-1">
                   {category.items.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => {
-                        onAddComponent(item.id);
-                        setExpandedCategory(null);
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleItemClick(item.id);
                       }}
-                      className="flex items-center gap-2 p-2 rounded-lg border border-border bg-muted/30 hover:bg-muted hover:border-primary/50 transition-all text-left group"
+                      className="flex items-center gap-1.5 p-1.5 rounded-md border border-transparent bg-muted/30 hover:bg-primary/10 hover:border-primary/30 transition-all text-left group"
                     >
                       <div className="text-muted-foreground group-hover:text-primary transition-colors">
-                        {item.icon}
+                        {React.cloneElement(item.icon as React.ReactElement, { className: 'w-3.5 h-3.5' })}
                       </div>
-                      <span className="text-xs text-foreground/80 group-hover:text-foreground transition-colors truncate">
+                      <span className="text-[10px] text-foreground/80 group-hover:text-foreground transition-colors truncate">
                         {item.name}
                       </span>
                     </button>

@@ -202,6 +202,7 @@ export const TemplateCanvas: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+  const [removeBackgroundEnabled, setRemoveBackgroundEnabled] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -532,28 +533,38 @@ export const TemplateCanvas: React.FC = () => {
     }));
   }, []);
 
-  const handleImageUpload = useCallback(() => {
+  const handleImageUpload = useCallback((shouldRemoveBackground: boolean = true) => {
+    setRemoveBackgroundEnabled(shouldRemoveBackground);
     fileInputRef.current?.click();
   }, []);
 
-  const processImage = useCallback(async (file: File) => {
+  const processImage = useCallback(async (file: File, shouldRemoveBackground: boolean) => {
     try {
-      setIsProcessing(true);
-      setProgress(0);
-      toast.info(t('upload.processing'), { duration: 2000 });
+      if (shouldRemoveBackground) {
+        setIsProcessing(true);
+        setProgress(0);
+        toast.info(t('upload.processing'), { duration: 2000 });
 
-      const img = await loadImage(file);
-      setProgress(20);
+        const img = await loadImage(file);
+        setProgress(20);
 
-      const resultBlob = await removeBackground(img, setProgress);
-      const imageUrl = URL.createObjectURL(resultBlob);
+        const resultBlob = await removeBackground(img, setProgress);
+        const imageUrl = URL.createObjectURL(resultBlob);
 
-      setState(prev => ({
-        ...prev,
-        playerImage: { ...prev.playerImage, imageUrl },
-      }));
+        setState(prev => ({
+          ...prev,
+          playerImage: { ...prev.playerImage, imageUrl },
+        }));
 
-      toast.success('Background removed successfully!');
+        toast.success('Background removed successfully!');
+      } else {
+        const imageUrl = URL.createObjectURL(file);
+        setState(prev => ({
+          ...prev,
+          playerImage: { ...prev.playerImage, imageUrl },
+        }));
+        toast.success('Image uploaded successfully!');
+      }
     } catch (error) {
       console.error('Error processing image:', error);
       toast.error('Failed to remove background. Using original image.');
@@ -572,10 +583,10 @@ export const TemplateCanvas: React.FC = () => {
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      processImage(file);
+      processImage(file, removeBackgroundEnabled);
     }
     e.target.value = '';
-  }, [processImage]);
+  }, [processImage, removeBackgroundEnabled]);
 
   const handleAddComponent = useCallback((componentId: string) => {
     const centerX = 350;
@@ -731,7 +742,7 @@ export const TemplateCanvas: React.FC = () => {
 
       <div className="flex flex-1">
         {/* Left Sidebar */}
-        <aside className={`w-72 p-4 flex flex-col gap-4 border-border bg-card/50 overflow-y-auto max-h-screen ${isRTL ? 'border-l' : 'border-r'}`}>
+        <aside className={`w-64 p-3 flex flex-col gap-2.5 border-border bg-card/50 overflow-y-auto max-h-[calc(100vh-60px)] ${isRTL ? 'border-l' : 'border-r'}`}>
           <ThemeSwitcher />
           <FontSelector />
           <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />
@@ -787,6 +798,8 @@ export const TemplateCanvas: React.FC = () => {
               progress={progress}
               onSelect={handleSelectComponent}
               isSelected={selectedComponent === state.playerImage.id}
+              removeBackgroundEnabled={removeBackgroundEnabled}
+              onToggleRemoveBackground={() => setRemoveBackgroundEnabled(!removeBackgroundEnabled)}
             />
 
             {/* Stat Circles */}

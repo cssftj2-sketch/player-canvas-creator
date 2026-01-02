@@ -1,6 +1,6 @@
 import React from 'react';
 import { Rnd } from 'react-rnd';
-import { Upload } from 'lucide-react';
+import { Upload, ImageOff } from 'lucide-react';
 
 interface PlayerImageProps {
   id: string;
@@ -9,11 +9,13 @@ interface PlayerImageProps {
   size: { width: number; height: number };
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
   onSizeChange: (id: string, size: { width: number; height: number }) => void;
-  onImageUpload: () => void;
+  onImageUpload: (removeBackground: boolean) => void;
   isProcessing: boolean;
   progress: number;
   onSelect: (id: string) => void;
   isSelected: boolean;
+  removeBackgroundEnabled?: boolean;
+  onToggleRemoveBackground?: () => void;
 }
 
 export const PlayerImage: React.FC<PlayerImageProps> = ({
@@ -28,13 +30,17 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
   progress,
   onSelect,
   isSelected,
+  removeBackgroundEnabled = true,
+  onToggleRemoveBackground,
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect(id);
-    if (!imageUrl) {
-      onImageUpload();
-    }
+  };
+
+  const handleUploadClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onImageUpload(removeBackgroundEnabled);
   };
 
   return (
@@ -69,10 +75,7 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
               }}
             />
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onImageUpload();
-              }}
+              onClick={handleUploadClick}
               className="absolute bottom-2 right-2 bg-card/80 backdrop-blur-sm border border-border rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-card"
             >
               <Upload className="w-4 h-4 text-foreground" />
@@ -111,18 +114,40 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
                     {progress}%
                   </span>
                 </div>
-                <span className="text-sm text-muted-foreground">Removing background...</span>
+                <span className="text-xs text-muted-foreground">Removing background...</span>
               </div>
             ) : (
-              <>
-                <Upload className="w-12 h-12 text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground font-heading">
+              <div className="flex flex-col items-center gap-2 p-4">
+                <Upload className="w-10 h-10 text-muted-foreground mb-1" />
+                <span className="text-xs text-muted-foreground font-heading text-center">
                   Click to upload player image
                 </span>
-                <span className="text-xs text-muted-foreground/60 mt-1">
-                  Background will be removed automatically
-                </span>
-              </>
+                
+                {/* Background Removal Toggle */}
+                <label 
+                  className="flex items-center gap-2 mt-2 cursor-pointer bg-muted/50 px-3 py-1.5 rounded-lg border border-border hover:bg-muted transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="checkbox"
+                    checked={removeBackgroundEnabled}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onToggleRemoveBackground?.();
+                    }}
+                    className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <ImageOff className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">Remove background</span>
+                </label>
+
+                <button
+                  onClick={handleUploadClick}
+                  className="mt-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-xs font-medium transition-colors border border-primary/30"
+                >
+                  Choose Image
+                </button>
+              </div>
             )}
           </div>
         )}

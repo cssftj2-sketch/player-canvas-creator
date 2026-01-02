@@ -1,4 +1,5 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion'; // For smooth transitions
 import { StatCircle } from './StatCircle';
 import { StatBox } from './StatBox';
 import { PlayerName } from './PlayerName';
@@ -23,6 +24,7 @@ import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
 
+// --- Interfaces ---
 interface CircleState {
   id: string;
   value: string;
@@ -203,8 +205,24 @@ export const TemplateCanvas: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [removeBackgroundEnabled, setRemoveBackgroundEnabled] = useState(true);
+  const [zoomScale, setZoomScale] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // --- RESPONSIVE FIX: Auto-scale canvas to fit screen ---
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1200) {
+        const scale = Math.min((window.innerWidth - 400) / 800, 1);
+        setZoomScale(scale < 0.5 ? 0.5 : scale);
+      } else {
+        setZoomScale(1);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const getBackgroundStyle = () => {
     switch (canvasBackground.type) {
@@ -219,8 +237,11 @@ export const TemplateCanvas: React.FC = () => {
     }
   };
 
-  const handleCanvasClick = () => {
-    setSelectedComponent(null);
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    // Only deselect if clicking the canvas background itself
+    if (e.target === e.currentTarget) {
+      setSelectedComponent(null);
+    }
   };
 
   const handleSelectComponent = (id: string) => {
@@ -228,7 +249,6 @@ export const TemplateCanvas: React.FC = () => {
   };
 
   const handlePlayerSelect = useCallback((playerData: any) => {
-    // Update player name
     setState(prev => ({
       ...prev,
       playerName: {
@@ -237,7 +257,6 @@ export const TemplateCanvas: React.FC = () => {
         lastName: playerData.name.split(' ').slice(1).join(' ') || '',
         country: playerData.nationality,
       },
-      // Update stats
       circles: prev.circles.map((circle, idx) => {
         if (idx === 0) return { ...circle, value: `${playerData.stats.passAccuracy}%`, label: 'Pass Accuracy' };
         if (idx === 1) return { ...circle, value: `${playerData.stats.tacklesWon}`, label: 'Tackles Won' };
@@ -264,95 +283,28 @@ export const TemplateCanvas: React.FC = () => {
     if (!selectedComponent) return null;
 
     const circle = state.circles.find(c => c.id === selectedComponent);
-    if (circle) {
-      return {
-        id: circle.id,
-        type: 'circle',
-        value: circle.value,
-        label: circle.label,
-        color: circle.color,
-        size: circle.size,
-        customColor: circle.customColor,
-      };
-    }
+    if (circle) return { id: circle.id, type: 'circle', value: circle.value, label: circle.label, color: circle.color, size: circle.size, customColor: circle.customColor };
 
     const box = state.boxes.find(b => b.id === selectedComponent);
-    if (box) {
-      return {
-        id: box.id,
-        type: 'box',
-        value: box.value,
-        label: box.label,
-        customColor: box.customColor,
-      };
-    }
+    if (box) return { id: box.id, type: 'box', value: box.value, label: box.label, customColor: box.customColor };
 
     const mini = state.miniStats.find(m => m.id === selectedComponent);
-    if (mini) {
-      return {
-        id: mini.id,
-        type: 'miniStat',
-        value: mini.value,
-        label: mini.label,
-        sublabel: mini.sublabel,
-        customColor: mini.customColor,
-      };
-    }
+    if (mini) return { id: mini.id, type: 'miniStat', value: mini.value, label: mini.label, sublabel: mini.sublabel, customColor: mini.customColor };
 
     const bar = state.progressBars.find(p => p.id === selectedComponent);
-    if (bar) {
-      return {
-        id: bar.id,
-        type: 'progressBar',
-        value: bar.value.toString(),
-        label: bar.label,
-        color: bar.color,
-        customColor: bar.customColor,
-      };
-    }
+    if (bar) return { id: bar.id, type: 'progressBar', value: bar.value.toString(), label: bar.label, color: bar.color, customColor: bar.customColor };
 
     const divider = state.dividers.find(d => d.id === selectedComponent);
-    if (divider) {
-      return {
-        id: divider.id,
-        type: 'divider',
-        color: divider.color,
-        customColor: divider.customColor,
-      };
-    }
+    if (divider) return { id: divider.id, type: 'divider', color: divider.color, customColor: divider.customColor };
 
     const icon = state.iconBadges.find(i => i.id === selectedComponent);
-    if (icon) {
-      return {
-        id: icon.id,
-        type: 'icon',
-        color: icon.color,
-        size: icon.size,
-        customColor: icon.customColor,
-      };
-    }
+    if (icon) return { id: icon.id, type: 'icon', color: icon.color, size: icon.size, customColor: icon.customColor };
 
     const text = state.textLabels.find(t => t.id === selectedComponent);
-    if (text) {
-      return {
-        id: text.id,
-        type: 'chart',
-        value: text.text,
-        fontSize: text.fontSize,
-        color: text.color,
-        customColor: text.customColor,
-      };
-    }
+    if (text) return { id: text.id, type: 'chart', value: text.text, fontSize: text.fontSize, color: text.color, customColor: text.customColor };
 
-    if (selectedComponent === 'rating') {
-      return {
-        id: 'rating',
-        type: 'rating',
-        value: state.rating.value,
-        label: state.rating.label,
-      };
-    }
-
+    if (selectedComponent === 'rating') return { id: 'rating', type: 'rating', value: state.rating.value, label: state.rating.label };
+    
     return null;
   };
 
@@ -421,7 +373,6 @@ export const TemplateCanvas: React.FC = () => {
 
   const handleDeleteComponent = () => {
     if (!selectedComponent) return;
-
     setState(prev => ({
       ...prev,
       circles: prev.circles.filter(c => c.id !== selectedComponent),
@@ -544,36 +495,22 @@ export const TemplateCanvas: React.FC = () => {
         setIsProcessing(true);
         setProgress(0);
         toast.info(t('upload.processing'), { duration: 2000 });
-
         const img = await loadImage(file);
         setProgress(20);
-
         const resultBlob = await removeBackground(img, setProgress);
         const imageUrl = URL.createObjectURL(resultBlob);
-
-        setState(prev => ({
-          ...prev,
-          playerImage: { ...prev.playerImage, imageUrl },
-        }));
-
+        setState(prev => ({ ...prev, playerImage: { ...prev.playerImage, imageUrl } }));
         toast.success('Background removed successfully!');
       } else {
         const imageUrl = URL.createObjectURL(file);
-        setState(prev => ({
-          ...prev,
-          playerImage: { ...prev.playerImage, imageUrl },
-        }));
+        setState(prev => ({ ...prev, playerImage: { ...prev.playerImage, imageUrl } }));
         toast.success('Image uploaded successfully!');
       }
     } catch (error) {
       console.error('Error processing image:', error);
       toast.error('Failed to remove background. Using original image.');
-      
       const imageUrl = URL.createObjectURL(file);
-      setState(prev => ({
-        ...prev,
-        playerImage: { ...prev.playerImage, imageUrl },
-      }));
+      setState(prev => ({ ...prev, playerImage: { ...prev.playerImage, imageUrl } }));
     } finally {
       setIsProcessing(false);
       setProgress(0);
@@ -582,9 +519,7 @@ export const TemplateCanvas: React.FC = () => {
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      processImage(file, removeBackgroundEnabled);
-    }
+    if (file) processImage(file, removeBackgroundEnabled);
     e.target.value = '';
   }, [processImage, removeBackgroundEnabled]);
 
@@ -594,337 +529,139 @@ export const TemplateCanvas: React.FC = () => {
     
     switch (componentId) {
       case 'circle-lg':
-        setState(prev => ({
-          ...prev,
-          circles: [...prev.circles, {
-            id: `circle-${Date.now()}`,
-            value: '0%',
-            label: 'New Stat',
-            color: 'gold',
-            size: 'lg',
-            position: { x: centerX, y: centerY },
-          }],
-        }));
+        setState(prev => ({ ...prev, circles: [...prev.circles, { id: `circle-${Date.now()}`, value: '0%', label: 'New Stat', color: 'gold', size: 'lg', position: { x: centerX, y: centerY } }] }));
         break;
       case 'circle-md':
-        setState(prev => ({
-          ...prev,
-          circles: [...prev.circles, {
-            id: `circle-${Date.now()}`,
-            value: '0%',
-            label: 'New Stat',
-            color: 'emerald',
-            size: 'md',
-            position: { x: centerX, y: centerY },
-          }],
-        }));
+        setState(prev => ({ ...prev, circles: [...prev.circles, { id: `circle-${Date.now()}`, value: '0%', label: 'New Stat', color: 'emerald', size: 'md', position: { x: centerX, y: centerY } }] }));
         break;
       case 'circle-sm':
-        setState(prev => ({
-          ...prev,
-          circles: [...prev.circles, {
-            id: `circle-${Date.now()}`,
-            value: '0%',
-            label: 'New Stat',
-            color: 'gold',
-            size: 'sm',
-            position: { x: centerX, y: centerY },
-          }],
-        }));
+        setState(prev => ({ ...prev, circles: [...prev.circles, { id: `circle-${Date.now()}`, value: '0%', label: 'New Stat', color: 'gold', size: 'sm', position: { x: centerX, y: centerY } }] }));
         break;
       case 'mini-stat':
-        setState(prev => ({
-          ...prev,
-          miniStats: [...prev.miniStats, {
-            id: `mini-${Date.now()}`,
-            value: '0',
-            label: 'STAT',
-            sublabel: 'label',
-            position: { x: centerX, y: centerY },
-          }],
-        }));
+        setState(prev => ({ ...prev, miniStats: [...prev.miniStats, { id: `mini-${Date.now()}`, value: '0', label: 'STAT', sublabel: 'label', position: { x: centerX, y: centerY } }] }));
         break;
       case 'stat-box':
-        setState(prev => ({
-          ...prev,
-          boxes: [...prev.boxes, {
-            id: `box-${Date.now()}`,
-            value: '0',
-            label: 'NEW',
-            position: { x: centerX, y: centerY },
-          }],
-        }));
+        setState(prev => ({ ...prev, boxes: [...prev.boxes, { id: `box-${Date.now()}`, value: '0', label: 'NEW', position: { x: centerX, y: centerY } }] }));
         break;
       case 'progress-bar':
-        setState(prev => ({
-          ...prev,
-          progressBars: [...prev.progressBars, {
-            id: `bar-${Date.now()}`,
-            value: 75,
-            label: 'Progress',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-            size: { width: 200, height: 40 },
-          }],
-        }));
+        setState(prev => ({ ...prev, progressBars: [...prev.progressBars, { id: `bar-${Date.now()}`, value: 75, label: 'Progress', color: 'gold', position: { x: centerX, y: centerY }, size: { width: 200, height: 40 } }] }));
         break;
       case 'divider-h':
-        setState(prev => ({
-          ...prev,
-          dividers: [...prev.dividers, {
-            id: `divider-${Date.now()}`,
-            orientation: 'horizontal',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-            size: { width: 150, height: 4 },
-          }],
-        }));
+        setState(prev => ({ ...prev, dividers: [...prev.dividers, { id: `divider-${Date.now()}`, orientation: 'horizontal', color: 'gold', position: { x: centerX, y: centerY }, size: { width: 150, height: 4 } }] }));
         break;
       case 'divider-v':
-        setState(prev => ({
-          ...prev,
-          dividers: [...prev.dividers, {
-            id: `divider-${Date.now()}`,
-            orientation: 'vertical',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-            size: { width: 4, height: 100 },
-          }],
-        }));
-        break;
-      case 'icon-trophy':
-      case 'icon-award':
-      case 'icon-target':
-      case 'icon-crown':
-      case 'icon-flame':
-      case 'icon-star':
-      case 'icon-shield':
-      case 'icon-heart':
-      case 'icon-zap':
-      case 'icon-flag':
-      case 'icon-sparkles':
-        const iconType = componentId.replace('icon-', '') as IconType;
-        setState(prev => ({
-          ...prev,
-          iconBadges: [...prev.iconBadges, {
-            id: `icon-${Date.now()}`,
-            icon: iconType,
-            color: 'gold',
-            size: 'md',
-            position: { x: centerX, y: centerY },
-          }],
-        }));
+        setState(prev => ({ ...prev, dividers: [...prev.dividers, { id: `divider-${Date.now()}`, orientation: 'vertical', color: 'gold', position: { x: centerX, y: centerY }, size: { width: 4, height: 100 } }] }));
         break;
       case 'text-label':
-        setState(prev => ({
-          ...prev,
-          textLabels: [...prev.textLabels, {
-            id: `text-${Date.now()}`,
-            text: 'Label',
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-          }],
-        }));
+        setState(prev => ({ ...prev, textLabels: [...prev.textLabels, { id: `text-${Date.now()}`, text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold', position: { x: centerX, y: centerY } }] }));
         break;
       default:
-        toast.info('Component added to canvas');
+        // Handle Icons
+        if (componentId.startsWith('icon-')) {
+          const iconType = componentId.replace('icon-', '') as IconType;
+          setState(prev => ({ ...prev, iconBadges: [...prev.iconBadges, { id: `icon-${Date.now()}`, icon: iconType, color: 'gold', size: 'md', position: { x: centerX, y: centerY } }] }));
+        }
     }
+    toast.success('Component added');
   }, []);
 
   return (
-    <div className={`relative w-full min-h-screen flex flex-col ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-      {/* Horizontal Toolbar */}
-      <div className="w-full">
+    // FIX 1 & 5: Main container uses flex-col to keep Toolbar at top and handles RTL responsive layouts
+    <div className={`flex flex-col h-screen w-full bg-background overflow-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
+      
+      {/* FIX 1: Toolbar is now a direct child of the flex container with proper z-index */}
+      <div className="z-[60] border-b bg-card relative shadow-sm">
         <HorizontalToolbar onAddComponent={handleAddComponent} />
       </div>
 
-      <div className="flex flex-1">
-        {/* Left Sidebar */}
-        <aside className={`w-64 p-3 flex flex-col gap-2.5 border-border bg-card/50 overflow-y-auto max-h-[calc(100vh-60px)] ${isRTL ? 'border-l' : 'border-r'}`}>
-          <ThemeSwitcher />
-          <FontSelector />
-          <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />
-          <BackgroundEditor />
-          <ExportControls canvasRef={canvasRef} />
+      <div className="flex flex-1 overflow-hidden relative">
+        
+        {/* FIX 2: Left Sidebar with proper overflow and scroll */}
+        <aside className={`w-72 border-r bg-card/50 flex flex-col overflow-hidden shrink-0 z-40`}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
+            <ThemeSwitcher />
+            <FontSelector />
+            <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />
+            <BackgroundEditor />
+            <ExportControls canvasRef={canvasRef} />
+          </div>
         </aside>
 
-        {/* Main Canvas */}
-        <div className="flex-1 flex items-center justify-center p-8" onClick={handleCanvasClick}>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            className="hidden"
-          />
-          
-          {/* Canvas */}
+        {/* FIX 4: Main Workspace - Canvas properly centered and scrollable */}
+        <main 
+          className="flex-1 overflow-auto bg-muted/30 flex items-start justify-center p-12 relative"
+          onClick={handleCanvasClick}
+        >
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+
+          {/* FIX 5: Canvas wrapper with scaling for smaller screens */}
           <div 
-            ref={canvasRef}
-            className="relative w-[750px] h-[850px] rounded-2xl overflow-hidden shadow-2xl border border-border"
-            style={getBackgroundStyle()}
-            onClick={handleCanvasClick}
+            style={{ 
+              transform: `scale(${zoomScale})`, 
+              transformOrigin: 'top center',
+              transition: 'transform 0.2s ease-out'
+            }}
+            className="shrink-0"
           >
-            {/* Grid overlay */}
             <div 
-              className="absolute inset-0 opacity-5 pointer-events-none"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
-                  linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
-                `,
-                backgroundSize: '50px 50px',
-              }}
-            />
+              ref={canvasRef}
+              className="relative w-[750px] h-[850px] rounded-2xl overflow-hidden shadow-2xl border bg-black select-none"
+              style={getBackgroundStyle()}
+              onClick={handleCanvasClick}
+            >
+              {/* Grid Overlay */}
+              <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
 
-            {/* Header */}
-            <HeaderBanner
-              {...state.header}
-              onPositionChange={(id, pos) => updatePosition('header', id, pos)}
-              onValueChange={handleHeaderChange}
-              onSelect={handleSelectComponent}
-              isSelected={selectedComponent === state.header.id}
-            />
+              {/* Header */}
+              <HeaderBanner {...state.header} onPositionChange={(id, pos) => updatePosition('header', id, pos)} onValueChange={handleHeaderChange} onSelect={handleSelectComponent} isSelected={selectedComponent === state.header.id} />
 
-            {/* Player Image */}
-            <PlayerImage
-              {...state.playerImage}
-              onPositionChange={(id, pos) => updatePosition('playerImage', id, pos)}
-              onSizeChange={handleImageSizeChange}
-              onImageUpload={handleImageUpload}
-              isProcessing={isProcessing}
-              progress={progress}
-              onSelect={handleSelectComponent}
-              isSelected={selectedComponent === state.playerImage.id}
-              removeBackgroundEnabled={removeBackgroundEnabled}
-              onToggleRemoveBackground={() => setRemoveBackgroundEnabled(!removeBackgroundEnabled)}
-            />
+              {/* Player Image */}
+              <PlayerImage {...state.playerImage} onPositionChange={(id, pos) => updatePosition('playerImage', id, pos)} onSizeChange={handleImageSizeChange} onImageUpload={handleImageUpload} isProcessing={isProcessing} progress={progress} onSelect={handleSelectComponent} isSelected={selectedComponent === state.playerImage.id} removeBackgroundEnabled={removeBackgroundEnabled} onToggleRemoveBackground={() => setRemoveBackgroundEnabled(!removeBackgroundEnabled)} />
 
-            {/* Stat Circles */}
-            {state.circles.map(circle => (
-              <StatCircle
-                key={circle.id}
-                {...circle}
-                onPositionChange={(id, pos) => updatePosition('circles', id, pos)}
-                onValueChange={handleCircleValueChange}
-                onSelect={handleSelectComponent}
-                isSelected={selectedComponent === circle.id}
-              />
-            ))}
-
-            {/* Stat Boxes */}
-            {state.boxes.map(box => (
-              <StatBox
-                key={box.id}
-                {...box}
-                onPositionChange={(id, pos) => updatePosition('boxes', id, pos)}
-                onValueChange={handleBoxValueChange}
-                onSelect={handleSelectComponent}
-                isSelected={selectedComponent === box.id}
-              />
-            ))}
-
-            {/* Player Name */}
-            <PlayerName
-              {...state.playerName}
-              onPositionChange={(id, pos) => updatePosition('playerName', id, pos)}
-              onValueChange={handlePlayerNameChange}
-              onSelect={handleSelectComponent}
-              isSelected={selectedComponent === state.playerName.id}
-            />
-
-            {/* Performance Chart */}
-            <PerformanceChart
-              {...state.chart}
-              onPositionChange={(id, pos) => updatePosition('chart', id, pos)}
-              onSelect={handleSelectComponent}
-              isSelected={selectedComponent === state.chart.id}
-            />
-
-            {/* Mini Stats */}
-            {state.miniStats.map(stat => (
-              <MiniStatBox
-                key={stat.id}
-                {...stat}
-                onPositionChange={(id, pos) => updatePosition('miniStats', id, pos)}
-                onValueChange={handleMiniStatValueChange}
-                onSelect={handleSelectComponent}
-                isSelected={selectedComponent === stat.id}
-              />
-            ))}
-
-            {/* Rating Badge */}
-            <RatingBadge
-              {...state.rating}
-              onPositionChange={(id, pos) => updatePosition('rating', id, pos)}
-              onValueChange={handleRatingChange}
-              onSelect={handleSelectComponent}
-              isSelected={selectedComponent === state.rating.id}
-            />
-
-            {/* Progress Bars */}
-            {state.progressBars.map(bar => (
-              <ProgressBar
-                key={bar.id}
-                {...bar}
-                onPositionChange={(id, pos) => updatePosition('progressBars', id, pos)}
-                onSizeChange={(id, size) => updateSize('progressBars', id, size)}
-                onValueChange={handleProgressBarValueChange}
-                onSelect={handleSelectComponent}
-                isSelected={selectedComponent === bar.id}
-              />
-            ))}
-
-            {/* Dividers */}
-            {state.dividers.map(divider => (
-              <Divider
-                key={divider.id}
-                {...divider}
-                onPositionChange={(id, pos) => updatePosition('dividers', id, pos)}
-                onSizeChange={(id, size) => updateSize('dividers', id, size)}
-                onSelect={handleSelectComponent}
-                isSelected={selectedComponent === divider.id}
-              />
-            ))}
-
-            {/* Icon Badges */}
-            {state.iconBadges.map(icon => (
-              <IconBadge
-                key={icon.id}
-                {...icon}
-                onPositionChange={(id, pos) => updatePosition('iconBadges', id, pos)}
-                onSelect={handleSelectComponent}
-                isSelected={selectedComponent === icon.id}
-              />
-            ))}
-
-            {/* Text Labels */}
-            {state.textLabels.map(text => (
-              <TextLabel
-                key={text.id}
-                {...text}
-                onPositionChange={(id, pos) => updatePosition('textLabels', id, pos)}
-                onValueChange={handleTextLabelChange}
-                onSelect={handleSelectComponent}
-                isSelected={selectedComponent === text.id}
-              />
-            ))}
+              {/* Map all components - FIX 6: Selection state passed to each */}
+              {state.circles.map(c => <StatCircle key={c.id} {...c} onPositionChange={(id, pos) => updatePosition('circles', id, pos)} onValueChange={handleCircleValueChange} onSelect={handleSelectComponent} isSelected={selectedComponent === c.id} />)}
+              {state.boxes.map(b => <StatBox key={b.id} {...b} onPositionChange={(id, pos) => updatePosition('boxes', id, pos)} onValueChange={handleBoxValueChange} onSelect={handleSelectComponent} isSelected={selectedComponent === b.id} />)}
+              
+              <PlayerName {...state.playerName} onPositionChange={(id, pos) => updatePosition('playerName', id, pos)} onValueChange={handlePlayerNameChange} onSelect={handleSelectComponent} isSelected={selectedComponent === state.playerName.id} />
+              
+              <PerformanceChart {...state.chart} onPositionChange={(id, pos) => updatePosition('chart', id, pos)} onSelect={handleSelectComponent} isSelected={selectedComponent === state.chart.id} />
+              
+              {state.miniStats.map(m => <MiniStatBox key={m.id} {...m} onPositionChange={(id, pos) => updatePosition('miniStats', id, pos)} onValueChange={handleMiniStatValueChange} onSelect={handleSelectComponent} isSelected={selectedComponent === m.id} />)}
+              
+              <RatingBadge {...state.rating} onPositionChange={(id, pos) => updatePosition('rating', id, pos)} onValueChange={handleRatingChange} onSelect={handleSelectComponent} isSelected={selectedComponent === state.rating.id} />
+              
+              {state.progressBars.map(bar => <ProgressBar key={bar.id} {...bar} onPositionChange={(id, pos) => updatePosition('progressBars', id, pos)} onSizeChange={(id, size) => updateSize('progressBars', id, size)} onValueChange={handleProgressBarValueChange} onSelect={handleSelectComponent} isSelected={selectedComponent === bar.id} />)}
+              
+              {state.dividers.map(d => <Divider key={d.id} {...d} onPositionChange={(id, pos) => updatePosition('dividers', id, pos)} onSizeChange={(id, size) => updateSize('dividers', id, size)} onSelect={handleSelectComponent} isSelected={selectedComponent === d.id} />)}
+              
+              {state.iconBadges.map(i => <IconBadge key={i.id} {...i} onPositionChange={(id, pos) => updatePosition('iconBadges', id, pos)} onSelect={handleSelectComponent} isSelected={selectedComponent === i.id} />)}
+              
+              {state.textLabels.map(t => <TextLabel key={t.id} {...t} onPositionChange={(id, pos) => updatePosition('textLabels', id, pos)} onValueChange={handleTextLabelChange} onSelect={handleSelectComponent} isSelected={selectedComponent === t.id} />)}
+            </div>
           </div>
-        </div>
+        </main>
 
-        {/* Right Sidebar - Property Editor */}
-        {selectedComponent && (
-          <aside className={`w-72 p-4 border-border bg-card/50 ${isRTL ? 'border-r' : 'border-l'}`}>
-            <PropertyEditor
-              component={getSelectedComponentData()}
-              onUpdate={handleUpdateComponent}
-              onDelete={handleDeleteComponent}
-              onClose={() => setSelectedComponent(null)}
-            />
-          </aside>
-        )}
+        {/* FIX 3: Right Sidebar with Smooth Transitions (AnimatePresence) */}
+        <AnimatePresence mode="wait">
+          {selectedComponent && (
+            <motion.aside
+              initial={{ x: 320, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 320, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="w-80 border-l bg-card shadow-xl z-50 flex flex-col shrink-0 overflow-hidden"
+            >
+              <div className="flex-1 overflow-y-auto scrollbar-thin">
+                <PropertyEditor
+                  component={getSelectedComponentData()}
+                  onUpdate={handleUpdateComponent}
+                  onDelete={handleDeleteComponent}
+                  onClose={() => setSelectedComponent(null)}
+                />
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

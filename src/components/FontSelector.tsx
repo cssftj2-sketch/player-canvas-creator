@@ -14,25 +14,25 @@ export const FontSelector: React.FC = () => {
   const { fontCombination, setFontCombination, t } = useTheme();
 
   return (
-    <div className="p-4 bg-card rounded-xl border border-border">
-      <div className="flex items-center gap-2 mb-3">
-        <Type className="w-4 h-4 text-primary" />
-        <span className="text-sm font-heading text-foreground">{t('fonts.title')}</span>
+    <div className="p-3 bg-card rounded-lg border border-border">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Type className="w-3.5 h-3.5 text-primary" />
+        <span className="text-xs font-medium text-foreground">{t('fonts.title')}</span>
       </div>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-1">
         {fontOptions.map((font) => (
           <button
             key={font.id}
             onClick={() => setFontCombination(font.id)}
-            className={`relative flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
+            className={`relative flex flex-col items-center justify-center p-1.5 rounded-md border transition-all ${
               fontCombination === font.id
-                ? 'border-primary bg-primary/10 ring-2 ring-primary/30'
+                ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
                 : 'border-border hover:border-muted-foreground'
             }`}
             title={t(`fonts.${font.id}`)}
           >
             <div 
-              className={`text-2xl mb-1 transition-all ${
+              className={`text-lg transition-all ${
                 fontCombination === font.id ? 'text-primary' : 'text-muted-foreground'
               }`}
               style={{
@@ -45,7 +45,7 @@ export const FontSelector: React.FC = () => {
             >
               {font.preview}
             </div>
-            <span className={`text-[10px] font-heading uppercase tracking-wider ${
+            <span className={`text-[8px] font-medium uppercase tracking-wide ${
               fontCombination === font.id ? 'text-primary' : 'text-muted-foreground'
             }`}>
               {t(`fonts.${font.id}`)}

@@ -11,29 +11,29 @@ const themes: { id: ColorTheme; name: string; colors: string[] }[] = [
 ];
 
 const languages: { id: Language; name: string; native: string }[] = [
-  { id: 'en', name: 'English', native: 'English' },
-  { id: 'ar', name: 'Arabic', native: 'العربية' },
+  { id: 'en', name: 'English', native: 'EN' },
+  { id: 'ar', name: 'Arabic', native: 'ع' },
 ];
 
 export const ThemeSwitcher: React.FC = () => {
   const { colorTheme, setColorTheme, language, setLanguage, t } = useTheme();
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-card rounded-xl border border-border">
+    <div className="flex flex-col gap-3 p-3 bg-card rounded-lg border border-border">
       {/* Color Theme */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Palette className="w-4 h-4 text-primary" />
-          <span className="text-sm font-heading text-foreground">{t('theme.title')}</span>
+        <div className="flex items-center gap-1.5 mb-2">
+          <Palette className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-medium text-foreground">{t('theme.title')}</span>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {themes.map((theme) => (
             <button
               key={theme.id}
               onClick={() => setColorTheme(theme.id)}
-              className={`relative flex items-center gap-1 p-2 rounded-lg border-2 transition-all ${
+              className={`relative flex items-center gap-0.5 p-1.5 rounded-md border transition-all ${
                 colorTheme === theme.id
-                  ? 'border-primary ring-2 ring-primary/30'
+                  ? 'border-primary ring-1 ring-primary/30'
                   : 'border-border hover:border-muted-foreground'
               }`}
               title={theme.name}
@@ -41,7 +41,7 @@ export const ThemeSwitcher: React.FC = () => {
               {theme.colors.map((color, i) => (
                 <div
                   key={i}
-                  className="w-5 h-5 rounded-full"
+                  className="w-4 h-4 rounded-full"
                   style={{ backgroundColor: color }}
                 />
               ))}
@@ -52,16 +52,16 @@ export const ThemeSwitcher: React.FC = () => {
 
       {/* Language */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Globe className="w-4 h-4 text-primary" />
-          <span className="text-sm font-heading text-foreground">{t('language.title')}</span>
+        <div className="flex items-center gap-1.5 mb-2">
+          <Globe className="w-3.5 h-3.5 text-primary" />
+          <span className="text-xs font-medium text-foreground">{t('language.title')}</span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {languages.map((lang) => (
             <button
               key={lang.id}
               onClick={() => setLanguage(lang.id)}
-              className={`px-4 py-2 rounded-lg border-2 text-sm font-heading transition-all ${
+              className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-all ${
                 language === lang.id
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border text-muted-foreground hover:border-muted-foreground'

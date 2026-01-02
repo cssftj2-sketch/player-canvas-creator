@@ -1,25 +1,24 @@
 // =====================================================
 // AI PLAYER SEARCH — PRODUCTION EDGE FUNCTION
 // Includes AFCON Match-Specific Stats Extension
+// Updated to Google Gemini API
 // =====================================================
 
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
-import OpenAI from "https://esm.sh/openai@4.24.1";
+import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.21.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 // =====================================================
 // ENV VALIDATION
 // =====================================================
 
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
-if (!OPENAI_API_KEY) {
-  throw new Error("Missing OPENAI_API_KEY environment variable");
+if (!GEMINI_API_KEY) {
+  throw new Error("Missing GEMINI_API_KEY environment variable");
 }
 
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // =====================================================
 // TYPES
@@ -102,7 +101,7 @@ You are a professional football analytics engine.
 
 CRITICAL RULES:
 - RETURN ONLY VALID JSON
-- NO MARKDOWN
+- NO MARKDOWN (Do not include \`\`\`json blocks)
 - NO COMMENTS
 - NO EXPLANATIONS
 - DATA MUST BE REALISTIC
@@ -163,17 +162,11 @@ JSON FORMAT:
 // =====================================================
 
 serve(async (req: Request) => {
-  // -------------------------------
-  // CORS PREFLIGHT
-  // -------------------------------
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    // -------------------------------
-    // METHOD GUARD
-    // -------------------------------
     if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method not allowed" }),
@@ -181,9 +174,6 @@ serve(async (req: Request) => {
       );
     }
 
-    // -------------------------------
-    // BODY PARSING
-    // -------------------------------
     const body = await req.json().catch(() => null);
 
     if (!body || typeof body.query !== "string") {
@@ -203,22 +193,23 @@ serve(async (req: Request) => {
     }
 
     // -------------------------------
-    // OPENAI CALL
+    // GEMINI CALL
     // -------------------------------
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.3,
-      max_tokens: 700,
-      messages: [
-        { role: "system", content: systemPrompt },
-        {
-          role: "user",
-          content: `Provide professional football data for: ${query}`,
-        },
-      ],
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: systemPrompt,
     });
 
-    const raw = completion.choices[0]?.message?.content;
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: `Provide professional football data for: ${query}` }] }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 1000,
+        responseMimeType: "application/json",
+      },
+    });
+
+    const raw = result.response.text();
 
     if (!raw) {
       throw new Error("Empty AI response");
@@ -295,9 +286,6 @@ serve(async (req: Request) => {
       player.afconMatch = null;
     }
 
-    // -------------------------------
-    // RESPONSE
-    // -------------------------------
     return new Response(JSON.stringify(player), {
       status: 200,
       headers: {
@@ -306,9 +294,6 @@ serve(async (req: Request) => {
       },
     });
   } catch (error) {
-    // -------------------------------
-    // ERROR HANDLER
-    // -------------------------------
     return new Response(
       JSON.stringify({
         error: "AI Player Search failed",

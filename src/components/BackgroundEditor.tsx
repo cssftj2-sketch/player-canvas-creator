@@ -17,9 +17,9 @@ export const BackgroundEditor: React.FC = () => {
   const { t, canvasBackground, setCanvasBackground } = useTheme();
 
   return (
-    <div className="bg-card border border-border rounded-lg p-3 space-y-2.5">
-      <h3 className="text-xs font-medium text-foreground flex items-center gap-1.5">
-        <Paintbrush className="w-3.5 h-3.5 text-primary" />
+    <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-3 space-y-2.5">
+      <h3 className="text-xs font-medium text-neutral-200 flex items-center gap-1.5">
+        <Paintbrush className="w-3.5 h-3.5 text-amber-400" />
         {t('background.title')}
       </h3>
 
@@ -31,8 +31,8 @@ export const BackgroundEditor: React.FC = () => {
             onClick={() => setCanvasBackground({ ...canvasBackground, type })}
             className={`px-2 py-1 rounded-md border text-[10px] font-medium transition-all ${
               canvasBackground.type === type
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:border-muted-foreground'
+                ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                : 'border-neutral-600 text-neutral-400 hover:border-neutral-500'
             }`}
           >
             {t(`background.${type}`)}
@@ -43,22 +43,22 @@ export const BackgroundEditor: React.FC = () => {
       {/* Color Pickers */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-[10px] text-muted-foreground block mb-0.5">Color 1</label>
+          <label className="text-[10px] text-neutral-400 block mb-0.5">Color 1</label>
           <input
             type="color"
             value={canvasBackground.color1}
             onChange={(e) => setCanvasBackground({ ...canvasBackground, color1: e.target.value })}
-            className="w-full h-6 rounded cursor-pointer border border-border"
+            className="w-full h-6 rounded cursor-pointer border border-neutral-600"
           />
         </div>
         {canvasBackground.type !== 'solid' && (
           <div>
-            <label className="text-[10px] text-muted-foreground block mb-0.5">Color 2</label>
+            <label className="text-[10px] text-neutral-400 block mb-0.5">Color 2</label>
             <input
               type="color"
               value={canvasBackground.color2}
               onChange={(e) => setCanvasBackground({ ...canvasBackground, color2: e.target.value })}
-              className="w-full h-6 rounded cursor-pointer border border-border"
+              className="w-full h-6 rounded cursor-pointer border border-neutral-600"
             />
           </div>
         )}
@@ -67,27 +67,27 @@ export const BackgroundEditor: React.FC = () => {
       {/* Angle Slider */}
       {canvasBackground.type === 'gradient' && (
         <div>
-          <label className="text-[10px] text-muted-foreground block mb-0.5">Angle: {canvasBackground.angle}°</label>
+          <label className="text-[10px] text-neutral-400 block mb-0.5">Angle: {canvasBackground.angle}°</label>
           <input
             type="range"
             min="0"
             max="360"
             value={canvasBackground.angle}
             onChange={(e) => setCanvasBackground({ ...canvasBackground, angle: parseInt(e.target.value) })}
-            className="w-full accent-primary h-1.5"
+            className="w-full accent-amber-500 h-1.5"
           />
         </div>
       )}
 
       {/* Presets */}
       <div>
-        <label className="text-[10px] text-muted-foreground block mb-1">Presets</label>
+        <label className="text-[10px] text-neutral-400 block mb-1">Presets</label>
         <div className="grid grid-cols-4 gap-1">
           {presetBackgrounds.map((preset, i) => (
             <button
               key={i}
               onClick={() => setCanvasBackground(preset.bg)}
-              className="w-full aspect-square rounded-md border border-border hover:border-primary transition-all overflow-hidden"
+              className="w-full aspect-square rounded-md border border-neutral-600 hover:border-amber-500 transition-all overflow-hidden"
               title={preset.name}
               style={{
                 background: preset.bg.type === 'solid' 

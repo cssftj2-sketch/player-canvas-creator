@@ -169,11 +169,11 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
   ===================================================== */
 
   return (
-    <div className="bg-card border border-border rounded-lg p-3 space-y-3">
+    <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-3 space-y-3">
       {/* HEADER */}
       <div className="flex items-center gap-2">
-        <Search className="w-4 h-4 text-primary" />
-        <h3 className="text-sm font-semibold">
+        <Search className="w-4 h-4 text-amber-400" />
+        <h3 className="text-sm font-semibold text-neutral-200">
           AI Player Search
         </h3>
       </div>
@@ -187,13 +187,13 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
           }
           onKeyDown={handleKeyPress}
           placeholder="Messi, Mahrez, Salah..."
-          className="flex-1 px-3 py-2 text-xs bg-muted border border-border rounded-md"
+          className="flex-1 px-3 py-2 text-xs bg-neutral-900 border border-neutral-600 rounded-md text-neutral-200 placeholder:text-neutral-500"
           disabled={isSearching}
         />
         <button
           onClick={searchPlayer}
           disabled={isSearching}
-          className="px-3 py-2 bg-primary text-primary-foreground rounded-md"
+          className="px-3 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors"
         >
           {isSearching ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -205,38 +205,38 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
 
       {/* ERROR */}
       {searchError && (
-        <div className="flex gap-2 bg-destructive/10 border border-destructive/20 rounded-md p-2 text-xs">
-          <AlertCircle className="w-4 h-4 text-destructive" />
+        <div className="flex gap-2 bg-red-500/10 border border-red-500/20 rounded-md p-2 text-xs text-red-400">
+          <AlertCircle className="w-4 h-4 text-red-400" />
           <span>{searchError}</span>
         </div>
       )}
 
       {/* PLAYER CARD */}
       {playerData && (
-        <div className="bg-muted rounded-md p-3 space-y-3 animate-in fade-in">
+        <div className="bg-neutral-900 rounded-md p-3 space-y-3 animate-in fade-in">
           {/* HEADER */}
           <div className="flex justify-between">
             <div className="flex gap-2">
-              <div className="w-9 h-9 bg-primary/20 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-primary" />
+              <div className="w-9 h-9 bg-amber-500/20 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-amber-400" />
               </div>
               <div>
-                <div className="font-semibold">
+                <div className="font-semibold text-neutral-200">
                   {playerData.name}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-neutral-400">
                   {playerData.position}
                 </div>
               </div>
             </div>
-            <div className="text-sm font-bold flex items-center gap-1">
-              <Trophy className="w-4 h-4 text-primary" />
+            <div className="text-sm font-bold flex items-center gap-1 text-amber-400">
+              <Trophy className="w-4 h-4 text-amber-400" />
               {playerData.stats.rating}
             </div>
           </div>
 
           {/* INFO */}
-          <div className="grid grid-cols-2 text-xs text-muted-foreground">
+          <div className="grid grid-cols-2 text-xs text-neutral-400">
             <div className="flex gap-1">
               <MapPin className="w-3 h-3" />
               {playerData.club}
@@ -248,22 +248,22 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
           </div>
 
           {/* CORE STATS */}
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="grid grid-cols-3 gap-2 text-center text-neutral-300">
             <div>
-              <Target className="mx-auto w-3 h-3" />
+              <Target className="mx-auto w-3 h-3 text-amber-400" />
               <div className="font-bold">
                 {playerData.stats.goals}
               </div>
-              <div className="text-[10px]">
+              <div className="text-[10px] text-neutral-500">
                 Goals
               </div>
             </div>
             <div>
-              <Trophy className="mx-auto w-3 h-3" />
+              <Trophy className="mx-auto w-3 h-3 text-amber-400" />
               <div className="font-bold">
                 {playerData.stats.assists}
               </div>
-              <div className="text-[10px]">
+              <div className="text-[10px] text-neutral-500">
                 Assists
               </div>
             </div>
@@ -271,14 +271,14 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
               <div className="font-bold">
                 {playerData.stats.appearances}
               </div>
-              <div className="text-[10px]">
+              <div className="text-[10px] text-neutral-500">
                 Apps
               </div>
             </div>
           </div>
 
           {/* ADVANCED */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-xs text-neutral-400">
             <div className="flex gap-1">
               <TrendingUp className="w-3 h-3" />
               xG {playerData.stats.xG}
@@ -317,7 +317,7 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
           {/* APPLY */}
           <button
             onClick={applyPlayerData}
-            className="w-full py-2 bg-secondary text-secondary-foreground rounded-md text-xs font-semibold"
+            className="w-full py-2 bg-emerald-600 text-white rounded-md text-xs font-semibold hover:bg-emerald-700 transition-colors"
           >
             Apply to Canvas
           </button>

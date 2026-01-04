@@ -14,10 +14,10 @@ export const FontSelector: React.FC = () => {
   const { fontCombination, setFontCombination, t } = useTheme();
 
   return (
-    <div className="p-3 bg-card rounded-lg border border-border">
+    <div className="p-3 bg-neutral-800/50 rounded-lg border border-neutral-700">
       <div className="flex items-center gap-1.5 mb-2">
-        <Type className="w-3.5 h-3.5 text-primary" />
-        <span className="text-xs font-medium text-foreground">{t('fonts.title')}</span>
+        <Type className="w-3.5 h-3.5 text-amber-400" />
+        <span className="text-xs font-medium text-neutral-200">{t('fonts.title')}</span>
       </div>
       <div className="grid grid-cols-5 gap-1">
         {fontOptions.map((font) => (
@@ -26,14 +26,14 @@ export const FontSelector: React.FC = () => {
             onClick={() => setFontCombination(font.id)}
             className={`relative flex flex-col items-center justify-center p-1.5 rounded-md border transition-all ${
               fontCombination === font.id
-                ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
-                : 'border-border hover:border-muted-foreground'
+                ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
+                : 'border-neutral-600 hover:border-neutral-500'
             }`}
             title={t(`fonts.${font.id}`)}
           >
             <div 
               className={`text-lg transition-all ${
-                fontCombination === font.id ? 'text-primary' : 'text-muted-foreground'
+                fontCombination === font.id ? 'text-amber-400' : 'text-neutral-400'
               }`}
               style={{
                 fontFamily: font.id === 'modern' ? "'Bebas Neue', sans-serif" :
@@ -46,7 +46,7 @@ export const FontSelector: React.FC = () => {
               {font.preview}
             </div>
             <span className={`text-[8px] font-medium uppercase tracking-wide ${
-              fontCombination === font.id ? 'text-primary' : 'text-muted-foreground'
+              fontCombination === font.id ? 'text-amber-400' : 'text-neutral-500'
             }`}>
               {t(`fonts.${font.id}`)}
             </span>

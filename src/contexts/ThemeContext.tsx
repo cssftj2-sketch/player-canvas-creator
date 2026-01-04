@@ -180,14 +180,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return translations[language][key] || key;
   };
 
-  // Apply theme class to document
-  useEffect(() => {
-    const root = document.documentElement;
-    // Remove all theme classes
-    root.classList.remove('theme-gold-emerald', 'theme-blue-silver', 'theme-red-black', 'theme-purple-gold', 'theme-green-white');
-    // Add current theme class
-    root.classList.add(`theme-${colorTheme}`);
-  }, [colorTheme]);
+  // Theme class is applied per-canvas only, not to document root
+  // This prevents affecting the app chrome
 
   // Apply font combination
   useEffect(() => {

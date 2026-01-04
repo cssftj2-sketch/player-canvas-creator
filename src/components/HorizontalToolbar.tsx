@@ -136,7 +136,7 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
   };
 
   return (
-    <div ref={toolbarRef} className="w-full bg-card border-b border-border shadow-lg relative" style={{ zIndex: 9999 }}>
+    <div ref={toolbarRef} className="w-full bg-neutral-900 border-b border-neutral-800 shadow-lg relative" style={{ zIndex: 9999 }}>
       <div className="flex items-center gap-1 px-2 py-1.5 overflow-x-auto scrollbar-thin">
         {componentCategories.map((category) => (
           <div key={category.id} className="relative flex-shrink-0">
@@ -144,8 +144,8 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
               onClick={() => toggleCategory(category.id)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border transition-all text-xs ${
                 expandedCategory === category.id
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                  ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                  : 'border-neutral-700 bg-neutral-800/50 text-neutral-400 hover:border-amber-500/50 hover:text-neutral-200'
               }`}
             >
               {React.cloneElement(category.icon as React.ReactElement, { className: 'w-3.5 h-3.5' })}
@@ -159,7 +159,7 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
 
             {expandedCategory === category.id && (
               <div 
-                className="absolute left-0 top-full mt-1 bg-card border border-border rounded-lg shadow-2xl min-w-[180px] p-1.5 max-h-[350px] overflow-y-auto"
+                className="absolute left-0 top-full mt-1 bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl min-w-[180px] p-1.5 max-h-[350px] overflow-y-auto"
                 style={{ zIndex: 99999 }}
               >
                 <div className="grid grid-cols-2 gap-1">
@@ -170,12 +170,12 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
                         e.stopPropagation();
                         handleItemClick(item.id);
                       }}
-                      className="flex items-center gap-1.5 p-1.5 rounded-md border border-transparent bg-muted/30 hover:bg-primary/10 hover:border-primary/30 transition-all text-left group"
+                      className="flex items-center gap-1.5 p-1.5 rounded-md border border-transparent bg-neutral-800/50 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all text-left group"
                     >
-                      <div className="text-muted-foreground group-hover:text-primary transition-colors">
+                      <div className="text-neutral-500 group-hover:text-amber-400 transition-colors">
                         {React.cloneElement(item.icon as React.ReactElement, { className: 'w-3.5 h-3.5' })}
                       </div>
-                      <span className="text-[10px] text-foreground/80 group-hover:text-foreground transition-colors truncate">
+                      <span className="text-[10px] text-neutral-300 group-hover:text-neutral-100 transition-colors truncate">
                         {item.name}
                       </span>
                     </button>

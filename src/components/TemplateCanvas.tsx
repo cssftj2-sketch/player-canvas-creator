@@ -197,7 +197,7 @@ const initialState: TemplateState = {
 };
 
 export const TemplateCanvas: React.FC = () => {
-  const { t, isRTL, canvasBackground } = useTheme();
+  const { t, isRTL, canvasBackground, colorTheme } = useTheme();
   const [state, setState] = useState<TemplateState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -754,7 +754,7 @@ export const TemplateCanvas: React.FC = () => {
 
       <div className="flex flex-1">
         {/* Left Sidebar */}
-        <aside className={`w-64 p-3 flex flex-col gap-2.5 border-border bg-card/50 shrink-0 ${isRTL ? 'border-l' : 'border-r'}`}>
+        <aside className={`w-64 p-3 flex flex-col gap-2.5 bg-neutral-900/80 border-neutral-800 shrink-0 ${isRTL ? 'border-l' : 'border-r'}`}>
           <ThemeSwitcher />
           <FontSelector />
           <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />
@@ -772,10 +772,10 @@ export const TemplateCanvas: React.FC = () => {
             className="hidden"
           />
           
-          {/* Canvas */}
+          {/* Canvas - Theme is applied here */}
           <div 
             ref={canvasRef}
-            className="relative w-[750px] h-[850px] rounded-2xl overflow-hidden shadow-2xl border border-border"
+            className={`theme-${colorTheme} relative w-[750px] h-[850px] rounded-2xl overflow-hidden shadow-2xl border border-border`}
             style={getBackgroundStyle()}
             onClick={handleCanvasClick}
           >
@@ -928,7 +928,7 @@ export const TemplateCanvas: React.FC = () => {
 
         {/* Right Sidebar - Property Editor */}
         {selectedComponent && (
-          <aside className={`w-72 p-4 border-border bg-card/50 ${isRTL ? 'border-r' : 'border-l'}`}>
+          <aside className={`w-72 p-4 bg-neutral-900/80 border-neutral-800 ${isRTL ? 'border-r' : 'border-l'}`}>
             <PropertyEditor
               component={getSelectedComponentData()}
               onUpdate={handleUpdateComponent}

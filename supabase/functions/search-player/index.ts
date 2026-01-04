@@ -1,24 +1,20 @@
 // =====================================================
 // AI PLAYER SEARCH — PRODUCTION EDGE FUNCTION
-// Includes AFCON Match-Specific Stats Extension
-// Updated to Google Gemini API
+// Using Lovable AI Gateway
 // =====================================================
 
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
-import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.21.0";
 import { corsHeaders } from "../_shared/cors.ts";
 
 // =====================================================
 // ENV VALIDATION
 // =====================================================
 
-const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-if (!GEMINI_API_KEY) {
-  throw new Error("Missing GEMINI_API_KEY environment variable");
+if (!LOVABLE_API_KEY) {
+  throw new Error("Missing LOVABLE_API_KEY environment variable");
 }
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // =====================================================
 // TYPES
@@ -193,27 +189,53 @@ serve(async (req: Request) => {
     }
 
     // -------------------------------
-    // GEMINI CALL
+    // LOVABLE AI GATEWAY CALL
     // -------------------------------
-    const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.0-flash",
-        systemInstruction: systemPrompt,
-    });
-
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: `Provide professional football data for: ${query}` }] }],
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 1000,
-        responseMimeType: "application/json",
+    console.log("Calling Lovable AI Gateway for player:", query);
+    
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Provide professional football data for: ${query}` }
+        ],
+      }),
     });
 
-    const raw = result.response.text();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Lovable AI Gateway error:", response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          { status: 429, headers: corsHeaders }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Payment required. Please add credits to your workspace." }),
+          { status: 402, headers: corsHeaders }
+        );
+      }
+      
+      throw new Error(`AI Gateway error: ${response.status}`);
+    }
+
+    const aiResponse = await response.json();
+    const raw = aiResponse.choices?.[0]?.message?.content;
 
     if (!raw) {
       throw new Error("Empty AI response");
     }
+
+    console.log("AI Response received:", raw.substring(0, 200));
 
     // -------------------------------
     // JSON PARSE
@@ -221,8 +243,20 @@ serve(async (req: Request) => {
     let parsed: PlayerResponse;
 
     try {
-      parsed = JSON.parse(raw);
-    } catch {
+      // Clean up potential markdown formatting
+      let cleanJson = raw.trim();
+      if (cleanJson.startsWith("```json")) {
+        cleanJson = cleanJson.slice(7);
+      }
+      if (cleanJson.startsWith("```")) {
+        cleanJson = cleanJson.slice(3);
+      }
+      if (cleanJson.endsWith("```")) {
+        cleanJson = cleanJson.slice(0, -3);
+      }
+      parsed = JSON.parse(cleanJson.trim());
+    } catch (e) {
+      console.error("JSON parse error:", e, "Raw:", raw);
       throw new Error("Invalid JSON returned by AI");
     }
 
@@ -286,6 +320,8 @@ serve(async (req: Request) => {
       player.afconMatch = null;
     }
 
+    console.log("Returning player data:", player.name);
+
     return new Response(JSON.stringify(player), {
       status: 200,
       headers: {
@@ -294,6 +330,7 @@ serve(async (req: Request) => {
       },
     });
   } catch (error) {
+    console.error("Edge function error:", error);
     return new Response(
       JSON.stringify({
         error: "AI Player Search failed",

@@ -19,12 +19,12 @@ export const ThemeSwitcher: React.FC = () => {
   const { colorTheme, setColorTheme, language, setLanguage, t } = useTheme();
 
   return (
-    <div className="flex flex-col gap-3 p-3 bg-card rounded-lg border border-border">
+    <div className="flex flex-col gap-3 p-3 bg-neutral-800/50 rounded-lg border border-neutral-700">
       {/* Color Theme */}
       <div>
         <div className="flex items-center gap-1.5 mb-2">
-          <Palette className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs font-medium text-foreground">{t('theme.title')}</span>
+          <Palette className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-xs font-medium text-neutral-200">{t('theme.title')}</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {themes.map((theme) => (
@@ -33,8 +33,8 @@ export const ThemeSwitcher: React.FC = () => {
               onClick={() => setColorTheme(theme.id)}
               className={`relative flex items-center gap-0.5 p-1.5 rounded-md border transition-all ${
                 colorTheme === theme.id
-                  ? 'border-primary ring-1 ring-primary/30'
-                  : 'border-border hover:border-muted-foreground'
+                  ? 'border-amber-500 ring-1 ring-amber-500/30'
+                  : 'border-neutral-600 hover:border-neutral-500'
               }`}
               title={theme.name}
             >
@@ -53,8 +53,8 @@ export const ThemeSwitcher: React.FC = () => {
       {/* Language */}
       <div>
         <div className="flex items-center gap-1.5 mb-2">
-          <Globe className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs font-medium text-foreground">{t('language.title')}</span>
+          <Globe className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-xs font-medium text-neutral-200">{t('language.title')}</span>
         </div>
         <div className="flex gap-1.5">
           {languages.map((lang) => (
@@ -63,8 +63,8 @@ export const ThemeSwitcher: React.FC = () => {
               onClick={() => setLanguage(lang.id)}
               className={`px-2.5 py-1 rounded-md border text-xs font-medium transition-all ${
                 language === lang.id
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-muted-foreground'
+                  ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                  : 'border-neutral-600 text-neutral-400 hover:border-neutral-500'
               }`}
             >
               {lang.native}

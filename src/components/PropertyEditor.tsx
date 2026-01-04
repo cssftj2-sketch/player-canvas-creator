@@ -49,29 +49,29 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
   ];
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+    <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-heading text-foreground flex items-center gap-2">
-          <Palette className="w-4 h-4 text-primary" />
+        <h3 className="text-sm font-heading text-neutral-200 flex items-center gap-2">
+          <Palette className="w-4 h-4 text-amber-400" />
           {t('properties.title')}
         </h3>
         <button 
           onClick={onClose}
-          className="p-1 hover:bg-muted rounded-lg transition-colors"
+          className="p-1 hover:bg-neutral-700 rounded-lg transition-colors"
         >
-          <X className="w-4 h-4 text-muted-foreground" />
+          <X className="w-4 h-4 text-neutral-400" />
         </button>
       </div>
 
       {/* Value Editor */}
       {component.value !== undefined && (
         <div>
-          <label className="text-xs text-muted-foreground block mb-2">Value</label>
+          <label className="text-xs text-neutral-400 block mb-2">Value</label>
           <input
             type="text"
             value={component.value}
             onChange={(e) => onUpdate({ value: e.target.value })}
-            className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-600 rounded-lg text-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
           />
         </div>
       )}
@@ -79,12 +79,12 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
       {/* Label Editor */}
       {component.label !== undefined && (
         <div>
-          <label className="text-xs text-muted-foreground block mb-2">Label</label>
+          <label className="text-xs text-neutral-400 block mb-2">Label</label>
           <input
             type="text"
             value={component.label}
             onChange={(e) => onUpdate({ label: e.target.value })}
-            className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full px-3 py-2 bg-neutral-900 border border-neutral-600 rounded-lg text-neutral-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50"
           />
         </div>
       )}
@@ -92,7 +92,7 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
       {/* Color Selector */}
       {component.color !== undefined && (
         <div>
-          <label className="text-xs text-muted-foreground block mb-2 flex items-center gap-1">
+          <label className="text-xs text-neutral-400 block mb-2 flex items-center gap-1">
             <Palette className="w-3 h-3" />
             {t('properties.color')}
           </label>
@@ -102,7 +102,7 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
                 key={color.id}
                 onClick={() => onUpdate({ color: color.id as 'gold' | 'emerald' })}
                 className={`w-8 h-8 rounded-full ${color.class} border-2 transition-all ${
-                  component.color === color.id ? 'border-foreground scale-110' : 'border-transparent'
+                  component.color === color.id ? 'border-white scale-110' : 'border-transparent'
                 }`}
                 title={color.label}
               />
@@ -113,14 +113,14 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
 
       {/* Custom Color Picker */}
       <div>
-        <label className="text-xs text-muted-foreground block mb-2">Custom Color</label>
+        <label className="text-xs text-neutral-400 block mb-2">Custom Color</label>
         <div className="grid grid-cols-7 gap-1">
           {customColors.map((color) => (
             <button
               key={color}
               onClick={() => onUpdate({ customColor: color })}
               className={`w-6 h-6 rounded border transition-all ${
-                component.customColor === color ? 'border-foreground scale-110' : 'border-border'
+                component.customColor === color ? 'border-white scale-110' : 'border-neutral-600'
               }`}
               style={{ backgroundColor: color }}
             />
@@ -137,7 +137,7 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
       {/* Size Selector */}
       {component.size !== undefined && (
         <div>
-          <label className="text-xs text-muted-foreground block mb-2 flex items-center gap-1">
+          <label className="text-xs text-neutral-400 block mb-2 flex items-center gap-1">
             <Maximize className="w-3 h-3" />
             {t('properties.size')}
           </label>
@@ -148,8 +148,8 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
                 onClick={() => onUpdate({ size: size.id as 'lg' | 'md' | 'sm' })}
                 className={`px-4 py-2 rounded-lg border-2 text-sm font-heading transition-all ${
                   component.size === size.id
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground hover:border-muted-foreground'
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                    : 'border-neutral-600 text-neutral-400 hover:border-neutral-500'
                 }`}
               >
                 {size.label}
@@ -162,7 +162,7 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
       {/* Font Size */}
       {component.fontSize !== undefined && (
         <div>
-          <label className="text-xs text-muted-foreground block mb-2 flex items-center gap-1">
+          <label className="text-xs text-neutral-400 block mb-2 flex items-center gap-1">
             <Type className="w-3 h-3" />
             Font Size
           </label>
@@ -172,16 +172,16 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
             max="120"
             value={component.fontSize}
             onChange={(e) => onUpdate({ fontSize: parseInt(e.target.value) })}
-            className="w-full accent-primary"
+            className="w-full accent-amber-500"
           />
-          <span className="text-xs text-muted-foreground">{component.fontSize}px</span>
+          <span className="text-xs text-neutral-400">{component.fontSize}px</span>
         </div>
       )}
 
       {/* Delete Button */}
       <button
         onClick={onDelete}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg transition-colors"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
       >
         <Trash2 className="w-4 h-4" />
         {t('properties.delete')}

@@ -101,9 +101,9 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvasRef }) => 
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-3 space-y-2">
-      <h3 className="text-xs font-medium text-foreground flex items-center gap-1.5">
-        <Download className="w-3.5 h-3.5 text-primary" />
+    <div className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-3 space-y-2">
+      <h3 className="text-xs font-medium text-neutral-200 flex items-center gap-1.5">
+        <Download className="w-3.5 h-3.5 text-amber-400" />
         {t('export.title')}
       </h3>
 
@@ -111,7 +111,7 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvasRef }) => 
         <button
           onClick={handleExportPNG}
           disabled={isExporting !== null}
-          className="flex flex-col items-center justify-center gap-1 px-2 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors disabled:opacity-50"
+          className="flex flex-col items-center justify-center gap-1 px-2 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition-colors disabled:opacity-50"
         >
           {isExporting === 'png' ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -124,7 +124,7 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvasRef }) => 
         <button
           onClick={handleExportJPG}
           disabled={isExporting !== null}
-          className="flex flex-col items-center justify-center gap-1 px-2 py-2 bg-secondary hover:bg-secondary/90 text-secondary-foreground rounded-md transition-colors disabled:opacity-50"
+          className="flex flex-col items-center justify-center gap-1 px-2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md transition-colors disabled:opacity-50"
         >
           {isExporting === 'jpg' ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -137,7 +137,7 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvasRef }) => 
         <button
           onClick={handleExportPDF}
           disabled={isExporting !== null}
-          className="flex flex-col items-center justify-center gap-1 px-2 py-2 border border-border hover:bg-muted text-foreground rounded-md transition-colors disabled:opacity-50"
+          className="flex flex-col items-center justify-center gap-1 px-2 py-2 border border-neutral-600 hover:bg-neutral-700 text-neutral-200 rounded-md transition-colors disabled:opacity-50"
         >
           {isExporting === 'pdf' ? (
             <Loader2 className="w-4 h-4 animate-spin" />

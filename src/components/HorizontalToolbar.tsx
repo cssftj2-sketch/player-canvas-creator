@@ -20,6 +20,10 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
+import { 
+  SoccerBall, Goal, Jersey, Whistle, Cleat, Pitch, 
+  Stopwatch, RedCard, YellowCard, Formation, GoalNet, Captain 
+} from './SoccerIcons';
 
 interface HorizontalToolbarProps {
   onAddComponent: (componentId: string) => void;
@@ -37,6 +41,25 @@ const componentCategories = [
       { id: 'stat-box', name: 'Stat Box', icon: <Square className="w-5 h-5" /> },
       { id: 'mini-stat', name: 'Mini Stat', icon: <Hash className="w-5 h-5" /> },
       { id: 'progress-bar', name: 'Progress Bar', icon: <Minus className="w-5 h-5" /> },
+    ]
+  },
+  {
+    id: 'soccer',
+    label: 'Soccer',
+    icon: <SoccerBall className="w-4 h-4" />,
+    items: [
+      { id: 'icon-soccer-ball', name: 'Ball', icon: <SoccerBall className="w-5 h-5" /> },
+      { id: 'icon-goal', name: 'Goal', icon: <Goal className="w-5 h-5" /> },
+      { id: 'icon-goal-net', name: 'Net', icon: <GoalNet className="w-5 h-5" /> },
+      { id: 'icon-jersey', name: 'Jersey', icon: <Jersey className="w-5 h-5" /> },
+      { id: 'icon-whistle', name: 'Whistle', icon: <Whistle className="w-5 h-5" /> },
+      { id: 'icon-cleat', name: 'Cleat', icon: <Cleat className="w-5 h-5" /> },
+      { id: 'icon-pitch', name: 'Pitch', icon: <Pitch className="w-5 h-5" /> },
+      { id: 'icon-stopwatch', name: 'Timer', icon: <Stopwatch className="w-5 h-5" /> },
+      { id: 'icon-red-card', name: 'Red Card', icon: <RedCard className="w-5 h-5" /> },
+      { id: 'icon-yellow-card', name: 'Yellow Card', icon: <YellowCard className="w-5 h-5" /> },
+      { id: 'icon-formation', name: 'Formation', icon: <Formation className="w-5 h-5" /> },
+      { id: 'icon-captain', name: 'Captain', icon: <Captain className="w-5 h-5" /> },
     ]
   },
   {
@@ -136,12 +159,8 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
 
             {expandedCategory === category.id && (
               <div 
-                className="fixed mt-1 bg-card border border-border rounded-lg shadow-2xl min-w-[180px] p-1.5 max-h-[350px] overflow-y-auto"
-                style={{ 
-                  zIndex: 99999,
-                  top: 'auto',
-                  left: 'auto',
-                }}
+                className="absolute left-0 top-full mt-1 bg-card border border-border rounded-lg shadow-2xl min-w-[180px] p-1.5 max-h-[350px] overflow-y-auto"
+                style={{ zIndex: 99999 }}
               >
                 <div className="grid grid-cols-2 gap-1">
                   {category.items.map((item) => (

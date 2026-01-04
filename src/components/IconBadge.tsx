@@ -4,8 +4,12 @@ import {
   Trophy, Star, Target, Award, Zap, Heart, 
   Shield, Flag, Medal, Crown, Flame, Sparkles 
 } from 'lucide-react';
+import { 
+  SoccerBall, Goal, Jersey, Whistle, Cleat, Pitch, 
+  Stopwatch, RedCard, YellowCard, Formation, GoalNet, Captain 
+} from './SoccerIcons';
 
-export type IconType = 'trophy' | 'star' | 'target' | 'award' | 'zap' | 'heart' | 'shield' | 'flag' | 'medal' | 'crown' | 'flame' | 'sparkles';
+export type IconType = 'trophy' | 'star' | 'target' | 'award' | 'zap' | 'heart' | 'shield' | 'flag' | 'medal' | 'crown' | 'flame' | 'sparkles' | 'soccer-ball' | 'goal' | 'jersey' | 'whistle' | 'cleat' | 'pitch' | 'stopwatch' | 'red-card' | 'yellow-card' | 'formation' | 'goal-net' | 'captain';
 
 interface IconBadgeProps {
   id: string;
@@ -32,6 +36,18 @@ const iconMap = {
   crown: Crown,
   flame: Flame,
   sparkles: Sparkles,
+  'soccer-ball': SoccerBall,
+  goal: Goal,
+  jersey: Jersey,
+  whistle: Whistle,
+  cleat: Cleat,
+  pitch: Pitch,
+  stopwatch: Stopwatch,
+  'red-card': RedCard,
+  'yellow-card': YellowCard,
+  formation: Formation,
+  'goal-net': GoalNet,
+  captain: Captain,
 };
 
 const sizeClasses = {
@@ -89,11 +105,16 @@ export const IconBadge: React.FC<IconBadgeProps> = ({
       className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
     >
       <div
-        className={`${sizeClasses[size].container} flex items-center justify-center rounded-xl ${colorClasses[color].bg} ${colorClasses[color].border} border-2 ${colorClasses[color].glow} transition-all hover:scale-105`}
+        className={`${sizeClasses[size].container} flex items-center justify-center rounded-xl ${!customColor ? colorClasses[color].bg : ''} ${!customColor ? colorClasses[color].border : ''} border-2 ${!customColor ? colorClasses[color].glow : ''} transition-all hover:scale-105`}
         onClick={handleClick}
+        style={{ 
+          backgroundColor: customColor ? `${customColor}33` : undefined,
+          borderColor: customColor || undefined,
+          boxShadow: customColor ? `0 0 20px ${customColor}66` : undefined,
+        }}
       >
         <IconComponent 
-          className={`${sizeClasses[size].icon} ${colorClasses[color].text}`}
+          className={`${sizeClasses[size].icon} ${!customColor ? colorClasses[color].text : ''}`}
           style={{ color: customColor || undefined }}
         />
       </div>

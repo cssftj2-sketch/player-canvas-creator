@@ -703,6 +703,18 @@ export const TemplateCanvas: React.FC = () => {
       case 'icon-zap':
       case 'icon-flag':
       case 'icon-sparkles':
+      case 'icon-soccer-ball':
+      case 'icon-goal':
+      case 'icon-goal-net':
+      case 'icon-jersey':
+      case 'icon-whistle':
+      case 'icon-cleat':
+      case 'icon-pitch':
+      case 'icon-stopwatch':
+      case 'icon-red-card':
+      case 'icon-yellow-card':
+      case 'icon-formation':
+      case 'icon-captain':
         const iconType = componentId.replace('icon-', '') as IconType;
         setState(prev => ({
           ...prev,
@@ -742,7 +754,7 @@ export const TemplateCanvas: React.FC = () => {
 
       <div className="flex flex-1">
         {/* Left Sidebar */}
-        <aside className={`w-64 p-3 flex flex-col gap-2.5 border-border bg-card/50 overflow-y-auto max-h-[calc(100vh-60px)] ${isRTL ? 'border-l' : 'border-r'}`}>
+        <aside className={`w-64 p-3 flex flex-col gap-2.5 border-border bg-card/50 shrink-0 ${isRTL ? 'border-l' : 'border-r'}`}>
           <ThemeSwitcher />
           <FontSelector />
           <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />

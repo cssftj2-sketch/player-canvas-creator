@@ -53,6 +53,7 @@ export const StatCircle: React.FC<StatCircleProps> = ({
   onValueChange,
   onSelect,
   isSelected,
+  customColor,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -106,13 +107,15 @@ export const StatCircle: React.FC<StatCircleProps> = ({
             cy="50"
             r="45"
             fill="none"
-            stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
-            className={colorClasses[color].text}
+            className={!customColor ? colorClasses[color].text : ''}
+            style={{ 
+              stroke: customColor || undefined,
+              transition: 'stroke-dashoffset 0.5s ease' 
+            }}
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
-            style={{ transition: 'stroke-dashoffset 0.5s ease' }}
           />
         </svg>
 
@@ -124,7 +127,8 @@ export const StatCircle: React.FC<StatCircleProps> = ({
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={handleBlur}
               autoFocus
-              className={`w-16 text-center bg-transparent ${sizeClasses[size].text} font-display ${colorClasses[color].text} outline-none border-b border-current`}
+              className={`w-16 text-center bg-transparent ${sizeClasses[size].text} font-display outline-none border-b border-current`}
+              style={{ color: customColor || undefined }}
             />
             <input
               type="text"
@@ -136,7 +140,10 @@ export const StatCircle: React.FC<StatCircleProps> = ({
           </div>
         ) : (
           <>
-            <span className={`font-display ${sizeClasses[size].text} ${colorClasses[color].text} z-10`}>
+            <span 
+              className={`font-display ${sizeClasses[size].text} ${!customColor ? colorClasses[color].text : ''} z-10`}
+              style={{ color: customColor || undefined }}
+            >
               {value}
             </span>
             <span className={`${sizeClasses[size].label} text-foreground/80 text-center leading-tight z-10 px-2`}>

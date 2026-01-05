@@ -681,8 +681,7 @@ export const TemplateCanvas: React.FC = () => {
     }
     e.target.value = '';
   }, [processImage, removeBackgroundEnabled]);
-
-  const handleAddComponent = useCallback((componentId: string) => {
+const handleAddComponent = useCallback((componentId: string) => {
     const centerX = 350;
     const centerY = 400;
     const newZ = maxZIndex + 1;

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { StatCircle } from './StatCircle';
 import { StatBox } from './StatBox';
 import { PlayerName } from './PlayerName';
@@ -8,7 +8,6 @@ import { HeaderBanner } from './HeaderBanner';
 import { MiniStatBox } from './MiniStatBox';
 import { RatingBadge } from './RatingBadge';
 import { ThemeSwitcher } from './ThemeSwitcher';
-import { ComponentLibrary } from './ComponentLibrary';
 import { BackgroundEditor } from './BackgroundEditor';
 import { ExportControls } from './ExportControls';
 import { PropertyEditor, ComponentData } from './PropertyEditor';
@@ -22,95 +21,101 @@ import AIPlayerSearch from './AIPlayerSearch';
 import { FontSelector } from './FontSelector';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme } from '@/contexts/ThemeContext';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import { Table } from 'lucide-react';
 
-interface CircleState {
+// Type definitions
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface Size {
+  width: number;
+  height: number;
+}
+
+interface BaseComponent {
   id: string;
+  position: Position;
+  zIndex?: number;
+}
+
+interface CircleState extends BaseComponent {
   value: string;
   label: string;
   color: 'gold' | 'emerald';
   size: 'lg' | 'md' | 'sm';
-  position: { x: number; y: number };
   customColor?: string;
   textColor?: string;
   numberColor?: string;
-  zIndex?: number;
 }
 
-interface BoxState {
-  id: string;
+interface BoxState extends BaseComponent {
   value: string;
   label: string;
   subStats?: { label: string; value: string }[];
-  position: { x: number; y: number };
   customColor?: string;
   textColor?: string;
   numberColor?: string;
-  zIndex?: number;
 }
 
-interface MiniStatState {
-  id: string;
+interface MiniStatState extends BaseComponent {
   value: string;
   label: string;
   sublabel?: string;
-  position: { x: number; y: number };
   customColor?: string;
   textColor?: string;
   numberColor?: string;
-  zIndex?: number;
 }
 
-interface ProgressBarState {
-  id: string;
+interface ProgressBarState extends BaseComponent {
   value: number;
   label: string;
   color: 'gold' | 'emerald';
-  position: { x: number; y: number };
-  size: { width: number; height: number };
+  size: Size;
   customColor?: string;
-  zIndex?: number;
 }
 
-interface DividerState {
-  id: string;
+interface DividerState extends BaseComponent {
   orientation: 'horizontal' | 'vertical';
   color: 'gold' | 'emerald';
-  position: { x: number; y: number };
-  size: { width: number; height: number };
+  size: Size;
   customColor?: string;
-  zIndex?: number;
 }
 
-interface IconBadgeState {
-  id: string;
+interface IconBadgeState extends BaseComponent {
   icon: IconType;
   color: 'gold' | 'emerald';
   size: 'lg' | 'md' | 'sm';
-  position: { x: number; y: number };
   customColor?: string;
-  zIndex?: number;
 }
 
-interface TextLabelState {
-  id: string;
+interface TextLabelState extends BaseComponent {
   text: string;
   fontSize: number;
   fontWeight: 'normal' | 'bold';
   color: 'gold' | 'emerald';
-  position: { x: number; y: number };
   customColor?: string;
-  zIndex?: number;
 }
 
-interface ChartState {
-  id: string;
+interface ChartState extends BaseComponent {
   data: { value: number }[];
   title: string;
-  position: { x: number; y: number };
   customColor?: string;
-  zIndex?: number;
+}
+
+interface PlayerData {
+  name: string;
+  nationality: string;
+  stats: {
+    passAccuracy: number;
+    tacklesWon: number;
+    goals: number;
+    appearances: number;
+    assists: number;
+    rating: number;
+  };
 }
 
 interface TemplateState {
@@ -122,22 +127,22 @@ interface TemplateState {
     lastName: string;
     number: string;
     country: string;
-    position: { x: number; y: number };
+    position: Position;
     zIndex?: number;
   };
   chart: ChartState;
   playerImage: {
     id: string;
     imageUrl: string | null;
-    position: { x: number; y: number };
-    size: { width: number; height: number };
+    position: Position;
+    size: Size;
     zIndex?: number;
   };
   header: {
     id: string;
     title: string;
     subtitle: string;
-    position: { x: number; y: number };
+    position: Position;
     zIndex?: number;
   };
   miniStats: MiniStatState[];
@@ -145,7 +150,7 @@ interface TemplateState {
     id: string;
     value: string;
     label: string;
-    position: { x: number; y: number };
+    position: Position;
     zIndex?: number;
   };
   progressBars: ProgressBarState[];
@@ -153,6 +158,14 @@ interface TemplateState {
   iconBadges: IconBadgeState[];
   textLabels: TextLabelState[];
 }
+
+// Constants
+const CANVAS_WIDTH = 750;
+const CANVAS_HEIGHT = 850;
+const CANVAS_CENTER_X = CANVAS_WIDTH / 2;
+const CANVAS_CENTER_Y = CANVAS_HEIGHT / 2;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 
 const initialState: TemplateState = {
   circles: [
@@ -225,6 +238,19 @@ const initialState: TemplateState = {
   textLabels: [],
 };
 
+// Component configuration for easy additions
+const COMPONENT_CONFIGS = {
+  'circle-lg': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'lg' } },
+  'circle-md': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'emerald', size: 'md' } },
+  'circle-sm': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'sm' } },
+  'mini-stat': { type: 'miniStats', defaults: { value: '0', label: 'STAT', sublabel: 'label' } },
+  'stat-box': { type: 'boxes', defaults: { value: '0', label: 'NEW' } },
+  'progress-bar': { type: 'progressBars', defaults: { value: 75, label: 'Progress', color: 'gold', size: { width: 200, height: 40 } } },
+  'divider-h': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
+  'divider-v': { type: 'dividers', defaults: { orientation: 'vertical', color: 'gold', size: { width: 4, height: 100 } } },
+  'text-label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold' } },
+};
+
 export const TemplateCanvas: React.FC = () => {
   const { t, isRTL, canvasBackground, colorTheme } = useTheme();
   const [state, setState] = useState<TemplateState>(initialState);
@@ -236,8 +262,38 @@ export const TemplateCanvas: React.FC = () => {
   const [maxZIndex, setMaxZIndex] = useState(20);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const imageUrlRef = useRef<string | null>(null);
 
-  const getBackgroundStyle = () => {
+  // Calculate actual max z-index from all components
+  useEffect(() => {
+    const allZIndexes = [
+      ...state.circles.map(c => c.zIndex || 0),
+      ...state.boxes.map(b => b.zIndex || 0),
+      ...state.miniStats.map(m => m.zIndex || 0),
+      ...state.progressBars.map(p => p.zIndex || 0),
+      ...state.dividers.map(d => d.zIndex || 0),
+      ...state.iconBadges.map(i => i.zIndex || 0),
+      ...state.textLabels.map(t => t.zIndex || 0),
+      state.playerName.zIndex || 0,
+      state.chart.zIndex || 0,
+      state.playerImage.zIndex || 0,
+      state.header.zIndex || 0,
+      state.rating.zIndex || 0,
+    ];
+    const currentMax = Math.max(...allZIndexes, 20);
+    setMaxZIndex(currentMax);
+  }, [state]);
+
+  // Cleanup image URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (imageUrlRef.current) {
+        URL.revokeObjectURL(imageUrlRef.current);
+      }
+    };
+  }, []);
+
+  const getBackgroundStyle = useCallback(() => {
     switch (canvasBackground.type) {
       case 'solid':
         return { background: canvasBackground.color1 };
@@ -248,85 +304,106 @@ export const TemplateCanvas: React.FC = () => {
       default:
         return {};
     }
-  };
+  }, [canvasBackground]);
 
-  const handleCanvasClick = () => {
-    setSelectedComponent(null);
-  };
+  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setSelectedComponent(null);
+    }
+  }, []);
 
-  const handleSelectComponent = (id: string) => {
+  const handleSelectComponent = useCallback((id: string) => {
     setSelectedComponent(id);
-  };
+  }, []);
 
-  const handleBringToFront = () => {
+  const handleBringToFront = useCallback(() => {
     if (!selectedComponent) return;
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
     handleUpdateComponent({ zIndex: newZ });
     toast.success('Brought to front');
-  };
+  }, [selectedComponent, maxZIndex]);
 
-  const handleSendToBack = () => {
+  const handleSendToBack = useCallback(() => {
     if (!selectedComponent) return;
     handleUpdateComponent({ zIndex: 1 });
     toast.success('Sent to back');
-  };
+  }, [selectedComponent]);
 
-  const handlePlayerSelect = useCallback((playerData: any) => {
-    setState(prev => ({
-      ...prev,
-      playerName: {
-        ...prev.playerName,
-        firstName: playerData.name.split(' ')[0] || '',
-        lastName: playerData.name.split(' ').slice(1).join(' ') || '',
-        country: playerData.nationality,
-      },
-      circles: prev.circles.map((circle, idx) => {
-        if (idx === 0) return { ...circle, value: `${playerData.stats.passAccuracy}%`, label: 'Pass Accuracy' };
-        if (idx === 1) return { ...circle, value: `${playerData.stats.tacklesWon}`, label: 'Tackles Won' };
-        return circle;
-      }),
-      boxes: prev.boxes.map(box => ({
-        ...box,
-        value: playerData.stats.goals.toString(),
-        label: 'GOALS',
-      })),
-      miniStats: [
-        { ...prev.miniStats[0], value: playerData.stats.appearances.toString(), label: 'APPS' },
-        { ...prev.miniStats[1], value: playerData.stats.assists.toString(), label: 'ASSISTS' },
-        { ...prev.miniStats[2], value: playerData.stats.goals.toString(), label: 'GOALS' },
-      ],
-      rating: {
-        ...prev.rating,
-        value: playerData.stats.rating.toString(),
-      }
-    }));
-  }, []);
+  const handlePlayerSelect = useCallback((playerData: PlayerData) => {
+    try {
+      const nameParts = playerData.name?.split(' ') || [];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
 
-  const handleDataTableChange = useCallback((data: any[]) => {
-    // Update canvas elements based on data table
-    setState(prev => {
-      const newMiniStats = [...prev.miniStats];
-      const newCircles = [...prev.circles];
-      
-      data.forEach((row, idx) => {
-        if (idx < newMiniStats.length) {
-          newMiniStats[idx] = {
-            ...newMiniStats[idx],
-            value: row.value,
-            label: row.label,
-          };
+      setState(prev => ({
+        ...prev,
+        playerName: {
+          ...prev.playerName,
+          firstName,
+          lastName,
+          country: playerData.nationality || '',
+        },
+        circles: prev.circles.map((circle, idx) => {
+          if (idx === 0 && playerData.stats?.passAccuracy !== undefined) {
+            return { ...circle, value: `${playerData.stats.passAccuracy}%`, label: 'Pass Accuracy' };
+          }
+          if (idx === 1 && playerData.stats?.tacklesWon !== undefined) {
+            return { ...circle, value: `${playerData.stats.tacklesWon}`, label: 'Tackles Won' };
+          }
+          return circle;
+        }),
+        boxes: prev.boxes.map(box => ({
+          ...box,
+          value: (playerData.stats?.goals ?? 0).toString(),
+          label: 'GOALS',
+        })),
+        miniStats: prev.miniStats.map((stat, idx) => {
+          if (idx === 0) return { ...stat, value: (playerData.stats?.appearances ?? 0).toString(), label: 'APPS' };
+          if (idx === 1) return { ...stat, value: (playerData.stats?.assists ?? 0).toString(), label: 'ASSISTS' };
+          if (idx === 2) return { ...stat, value: (playerData.stats?.goals ?? 0).toString(), label: 'GOALS' };
+          return stat;
+        }),
+        rating: {
+          ...prev.rating,
+          value: (playerData.stats?.rating ?? 0).toString(),
         }
-      });
-
-      return { ...prev, miniStats: newMiniStats };
-    });
-    
-    setShowDataTable(false);
-    toast.success('Data synced to canvas');
+      }));
+      
+      toast.success('Player data loaded successfully');
+    } catch (error) {
+      console.error('Error loading player data:', error);
+      toast.error('Failed to load player data');
+    }
   }, []);
 
-  const getSelectedComponentData = (): ComponentData | null => {
+  const handleDataTableChange = useCallback((data: Array<{ label: string; value: string }>) => {
+    try {
+      setState(prev => {
+        const newMiniStats = [...prev.miniStats];
+        
+        data.forEach((row, idx) => {
+          if (idx < newMiniStats.length && row.label && row.value) {
+            newMiniStats[idx] = {
+              ...newMiniStats[idx],
+              value: row.value,
+              label: row.label,
+            };
+          }
+        });
+
+        return { ...prev, miniStats: newMiniStats };
+      });
+      
+      setShowDataTable(false);
+      toast.success('Data synced to canvas');
+    } catch (error) {
+      console.error('Error syncing data:', error);
+      toast.error('Failed to sync data');
+    }
+  }, []);
+
+  const getSelectedComponentData = useCallback((): ComponentData | null => {
     if (!selectedComponent) return null;
 
     const circle = state.circles.find(c => c.id === selectedComponent);
@@ -444,9 +521,9 @@ export const TemplateCanvas: React.FC = () => {
     }
 
     return null;
-  };
+  }, [selectedComponent, state]);
 
-  const handleUpdateComponent = (data: Partial<ComponentData>) => {
+  const handleUpdateComponent = useCallback((data: Partial<ComponentData>) => {
     if (!selectedComponent) return;
 
     setState(prev => {
@@ -474,16 +551,16 @@ export const TemplateCanvas: React.FC = () => {
       const barIdx = prev.progressBars.findIndex(p => p.id === selectedComponent);
       if (barIdx !== -1) {
         const updated = [...prev.progressBars];
-        const { size, ...restData } = data as any;
-        updated[barIdx] = { ...updated[barIdx], ...restData, value: parseInt(data.value || updated[barIdx].value.toString()) };
+        const numValue = parseInt(data.value || updated[barIdx].value.toString(), 10);
+        const validValue = isNaN(numValue) ? 0 : Math.max(0, Math.min(100, numValue));
+        updated[barIdx] = { ...updated[barIdx], ...data, value: validValue };
         return { ...prev, progressBars: updated };
       }
 
       const dividerIdx = prev.dividers.findIndex(d => d.id === selectedComponent);
       if (dividerIdx !== -1) {
         const updated = [...prev.dividers];
-        const { size, ...restData } = data as any;
-        updated[dividerIdx] = { ...updated[dividerIdx], ...restData };
+        updated[dividerIdx] = { ...updated[dividerIdx], ...data };
         return { ...prev, dividers: updated };
       }
 
@@ -511,9 +588,9 @@ export const TemplateCanvas: React.FC = () => {
 
       return prev;
     });
-  };
+  }, [selectedComponent]);
 
-  const handleDeleteComponent = () => {
+  const handleDeleteComponent = useCallback(() => {
     if (!selectedComponent) return;
 
     setState(prev => ({
@@ -528,9 +605,9 @@ export const TemplateCanvas: React.FC = () => {
     }));
     setSelectedComponent(null);
     toast.success('Component deleted');
-  };
+  }, [selectedComponent]);
 
-  const updatePosition = useCallback((category: keyof TemplateState, id: string, position: { x: number; y: number }) => {
+  const updatePosition = useCallback((category: keyof TemplateState, id: string, position: Position) => {
     setState(prev => {
       if (Array.isArray(prev[category])) {
         return {
@@ -550,7 +627,7 @@ export const TemplateCanvas: React.FC = () => {
     });
   }, []);
 
-  const updateSize = useCallback((category: keyof TemplateState, id: string, size: { width: number; height: number }) => {
+  const updateSize = useCallback((category: keyof TemplateState, id: string, size: Size) => {
     setState(prev => {
       if (Array.isArray(prev[category])) {
         return {
@@ -558,6 +635,12 @@ export const TemplateCanvas: React.FC = () => {
           [category]: (prev[category] as any[]).map(item =>
             item.id === id ? { ...item, size } : item
           ),
+        };
+      }
+      if ((prev[category] as any).id === id) {
+        return {
+          ...prev,
+          [category]: { ...prev[category] as any, size },
         };
       }
       return prev;
@@ -606,7 +689,7 @@ export const TemplateCanvas: React.FC = () => {
     }));
   }, []);
 
-  const handleImageSizeChange = useCallback((id: string, size: { width: number; height: number }) => {
+  const handleImageSizeChange = useCallback((id: string, size: Size) => {
     setState(prev => ({
       ...prev,
       playerImage: { ...prev.playerImage, size },
@@ -634,16 +717,23 @@ export const TemplateCanvas: React.FC = () => {
 
   const processImage = useCallback(async (file: File, shouldRemoveBackground: boolean) => {
     try {
+      // Revoke previous URL if exists
+      if (imageUrlRef.current) {
+        URL.revokeObjectURL(imageUrlRef.current);
+        imageUrlRef.current = null;
+      }
+
       if (shouldRemoveBackground) {
         setIsProcessing(true);
         setProgress(0);
-        toast.info(t('upload.processing'), { duration: 2000 });
+        toast.info(t('upload.processing') || 'Processing image...', { duration: 2000 });
 
         const img = await loadImage(file);
         setProgress(20);
 
         const resultBlob = await removeBackground(img, setProgress);
         const imageUrl = URL.createObjectURL(resultBlob);
+        imageUrlRef.current = imageUrl;
 
         setState(prev => ({
           ...prev,
@@ -653,6 +743,8 @@ export const TemplateCanvas: React.FC = () => {
         toast.success('Background removed successfully!');
       } else {
         const imageUrl = URL.createObjectURL(file);
+        imageUrlRef.current = imageUrl;
+        
         setState(prev => ({
           ...prev,
           playerImage: { ...prev.playerImage, imageUrl },
@@ -661,9 +753,11 @@ export const TemplateCanvas: React.FC = () => {
       }
     } catch (error) {
       console.error('Error processing image:', error);
-      toast.error('Failed to remove background. Using original image.');
+      toast.error('Failed to process image. Using original.');
       
       const imageUrl = URL.createObjectURL(file);
+      imageUrlRef.current = imageUrl;
+      
       setState(prev => ({
         ...prev,
         playerImage: { ...prev.playerImage, imageUrl },
@@ -676,189 +770,80 @@ export const TemplateCanvas: React.FC = () => {
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      processImage(file, removeBackgroundEnabled);
+    if (!file) return;
+
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast.error('Please upload a valid image file (JPEG, PNG, or WebP)');
+      e.target.value = '';
+      return;
     }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('File size must be less than 10MB');
+      e.target.value = '';
+      return;
+    }
+
+    processImage(file, removeBackgroundEnabled);
     e.target.value = '';
   }, [processImage, removeBackgroundEnabled]);
-const handleAddComponent = useCallback((componentId: string) => {
-    const centerX = 350;
-    const centerY = 400;
+
+  const handleAddComponent = useCallback((componentId: string) => {
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
     
-    switch (componentId) {
-      case 'circle-lg':
-        setState(prev => ({
-          ...prev,
-          circles: [...prev.circles, {
-            id: `circle-${Date.now()}`,
-            value: '0%',
-            label: 'New Stat',
-            color: 'gold',
-            size: 'lg',
-            position: { x: centerX, y: centerY },
+    // Handle data table separately
+    if (componentId === 'data-table') {
+      setShowDataTable(true);
+      return;
+    }
+
+    // Handle icon components
+    if (componentId.startsWith('icon-')) {
+      const iconType = componentId.replace('icon-', '') as IconType;
+      setState(prev => ({
+        ...prev,
+        iconBadges: [...prev.iconBadges, {
+          id: `icon-${Date.now()}`,
+          icon: iconType,
+          color: 'gold',
+          size: 'md',
+          position: { x: CANVAS_CENTER_X, y: CANVAS_CENTER_Y },
+          zIndex: newZ,
+        }],
+      }));
+      toast.success('Icon added to canvas');
+      return;
+    }
+
+    // Handle configured components
+    const config = COMPONENT_CONFIGS[componentId as keyof typeof COMPONENT_CONFIGS];
+    if (config) {
+      const newId = `${config.type}-${Date.now()}`;
+      setState(prev => ({
+        ...prev,
+        [config.type]: [
+          ...(prev[config.type as keyof TemplateState] as any[]),
+          {
+            id: newId,
+            ...config.defaults,
+            position: { x: CANVAS_CENTER_X, y: CANVAS_CENTER_Y },
             zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'circle-md':
-        setState(prev => ({
-          ...prev,
-          circles: [...prev.circles, {
-            id: `circle-${Date.now()}`,
-            value: '0%',
-            label: 'New Stat',
-            color: 'emerald',
-            size: 'md',
-            position: { x: centerX, y: centerY },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'circle-sm':
-        setState(prev => ({
-          ...prev,
-          circles: [...prev.circles, {
-            id: `circle-${Date.now()}`,
-            value: '0%',
-            label: 'New Stat',
-            color: 'gold',
-            size: 'sm',
-            position: { x: centerX, y: centerY },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'mini-stat':
-        setState(prev => ({
-          ...prev,
-          miniStats: [...prev.miniStats, {
-            id: `mini-${Date.now()}`,
-            value: '0',
-            label: 'STAT',
-            sublabel: 'label',
-            position: { x: centerX, y: centerY },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'stat-box':
-        setState(prev => ({
-          ...prev,
-          boxes: [...prev.boxes, {
-            id: `box-${Date.now()}`,
-            value: '0',
-            label: 'NEW',
-            position: { x: centerX, y: centerY },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'progress-bar':
-        setState(prev => ({
-          ...prev,
-          progressBars: [...prev.progressBars, {
-            id: `bar-${Date.now()}`,
-            value: 75,
-            label: 'Progress',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-            size: { width: 200, height: 40 },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'divider-h':
-        setState(prev => ({
-          ...prev,
-          dividers: [...prev.dividers, {
-            id: `divider-${Date.now()}`,
-            orientation: 'horizontal',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-            size: { width: 150, height: 4 },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'divider-v':
-        setState(prev => ({
-          ...prev,
-          dividers: [...prev.dividers, {
-            id: `divider-${Date.now()}`,
-            orientation: 'vertical',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-            size: { width: 4, height: 100 },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'data-table':
-        setShowDataTable(true);
-        break;
-      case 'icon-trophy':
-      case 'icon-award':
-      case 'icon-medal':
-      case 'icon-target':
-      case 'icon-crown':
-      case 'icon-flame':
-      case 'icon-star':
-      case 'icon-shield':
-      case 'icon-heart':
-      case 'icon-zap':
-      case 'icon-flag':
-      case 'icon-sparkles':
-      case 'icon-soccer-ball':
-      case 'icon-goal':
-      case 'icon-goal-net':
-      case 'icon-jersey':
-      case 'icon-whistle':
-      case 'icon-cleat':
-      case 'icon-pitch':
-      case 'icon-stopwatch':
-      case 'icon-red-card':
-      case 'icon-yellow-card':
-      case 'icon-formation':
-      case 'icon-captain':
-      case 'icon-timer':
-      case 'icon-location':
-      case 'icon-users':
-        const iconType = componentId.replace('icon-', '') as IconType;
-        setState(prev => ({
-          ...prev,
-          iconBadges: [...prev.iconBadges, {
-            id: `icon-${Date.now()}`,
-            icon: iconType,
-            color: 'gold',
-            size: 'md',
-            position: { x: centerX, y: centerY },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      case 'text-label':
-        setState(prev => ({
-          ...prev,
-          textLabels: [...prev.textLabels, {
-            id: `text-${Date.now()}`,
-            text: 'Label',
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: 'gold',
-            position: { x: centerX, y: centerY },
-            zIndex: newZ,
-          }],
-        }));
-        break;
-      default:
-        toast.info('Component added to canvas');
+          }
+        ],
+      }));
+      toast.success('Component added to canvas');
     }
   }, [maxZIndex]);
 
+  const backgroundStyle = useMemo(() => getBackgroundStyle(), [getBackgroundStyle]);
+
   return (
     <div className={`relative w-full min-h-screen flex flex-col ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+      <Toaster position="top-center" richColors />
+      
       {/* Horizontal Toolbar */}
       <div className="w-full" style={{ overflow: 'visible' }}>
         <HorizontalToolbar onAddComponent={handleAddComponent} />
@@ -876,6 +861,7 @@ const handleAddComponent = useCallback((componentId: string) => {
           <button
             onClick={() => setShowDataTable(true)}
             className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700 rounded-lg transition-colors text-sm text-neutral-200"
+            aria-label="Open data table editor"
           >
             <Table className="w-4 h-4 text-amber-400" />
             Open Data Table
@@ -890,16 +876,22 @@ const handleAddComponent = useCallback((componentId: string) => {
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept="image/*"
+            accept={ALLOWED_FILE_TYPES.join(',')}
             className="hidden"
+            aria-label="Upload player image"
           />
           
-          {/* Canvas - Theme is applied here, no border for clean exports */}
+          {/* Canvas */}
           <div 
             ref={canvasRef}
-            className={`theme-${colorTheme} relative w-[750px] h-[850px] overflow-hidden shadow-2xl`}
-            style={getBackgroundStyle()}
-            onClick={handleCanvasClick}
+            className={`theme-${colorTheme} relative overflow-hidden shadow-2xl`}
+            style={{
+              width: `${CANVAS_WIDTH}px`,
+              height: `${CANVAS_HEIGHT}px`,
+              ...backgroundStyle
+            }}
+            role="application"
+            aria-label="Player stats design canvas"
           >
             {/* Grid overlay */}
             <div 

@@ -237,22 +237,36 @@ const initialState: TemplateState = {
   textLabels: [],
 };
 
-// Component configuration for easy additions
-const COMPONENT_CONFIGS = {
+// Component configuration - maps ALL possible toolbar button IDs
+const COMPONENT_CONFIGS: Record<string, { type: keyof TemplateState; defaults: any }> = {
+  // Circles
   'circle-lg': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'lg' } },
   'circle-md': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'emerald', size: 'md' } },
   'circle-sm': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'sm' } },
-  'mini-stat': { type: 'miniStats', defaults: { value: '0', label: 'STAT', sublabel: 'label' } },
+  'stat-circle': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'md' } },
+  
+  // Boxes
   'stat-box': { type: 'boxes', defaults: { value: '0', label: 'NEW' } },
   'box-shape': { type: 'boxes', defaults: { value: '0', label: 'BOX' } },
+  
+  // Mini Stats
+  'mini-stat': { type: 'miniStats', defaults: { value: '0', label: 'STAT', sublabel: 'label' } },
+  
+  // Progress Bars
   'progress-bar': { type: 'progressBars', defaults: { value: 75, label: 'Progress', color: 'gold', size: { width: 200, height: 40 } } },
+  
+  // Dividers
   'divider-h': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
   'divider-v': { type: 'dividers', defaults: { orientation: 'vertical', color: 'gold', size: { width: 4, height: 100 } } },
+  'divider': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
+  
+  // Text Labels
   'text-label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold' } },
+  'text': { type: 'textLabels', defaults: { text: 'Text', fontSize: 20, fontWeight: 'normal', color: 'gold' } },
 };
 
 export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
-  const { t, isRTL, canvasBackground, colorTheme } = useTheme();
+  const { t, isRTL, canvasBackground, colorTheme, setColorTheme } = useTheme();
   const [state, setState] = useState<TemplateState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -370,7 +384,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         }
       }));
       
-      toast.success('Player data loaded successfully');
+      console.log('Player data loaded successfully');
     } catch (error) {
       console.error('Error loading player data:', error);
     }
@@ -795,16 +809,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
           ...prev,
           playerImage: { ...prev.playerImage, imageUrl },
         }));
-
-        console.log('Background removed successfully!');
-      } else {
-        const imageUrl = URL.createObjectURL(file);
-        imageUrlRef.current = imageUrl;
-        
-        setState(prev => ({
-          ...prev,
-          playerImage: { ...prev.playerImage, imageUrl },
-        }));
         console.log('Image uploaded successfully!');
       }
     } catch (error) {
@@ -821,7 +825,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       setIsProcessing(false);
       setProgress(0);
     }
-  }, [t]);
+  }, []);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -856,29 +860,10 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       return;
     }
 
-    // Handle special single components
-    if (componentId === 'player-name') {
-      console.log('Player name already exists - cannot add duplicate');
-      return;
-    }
-
-    if (componentId === 'header') {
-      console.log('Header already exists - cannot add duplicate');
-      return;
-    }
-
-    if (componentId === 'chart') {
-      console.log('Chart already exists - cannot add duplicate');
-      return;
-    }
-
-    if (componentId === 'rating') {
-      console.log('Rating already exists - cannot add duplicate');
-      return;
-    }
-
-    if (componentId === 'player-image') {
-      console.log('Player image already exists - cannot add duplicate');
+    // Handle special single components (can't be duplicated)
+    const singleComponents = ['player-name', 'header', 'chart', 'rating', 'player-image'];
+    if (singleComponents.includes(componentId)) {
+      console.log(`${componentId} already exists - cannot add duplicate`);
       return;
     }
 
@@ -901,7 +886,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     }
 
     // Handle configured components
-    const config = COMPONENT_CONFIGS[componentId as keyof typeof COMPONENT_CONFIGS];
+    const config = COMPONENT_CONFIGS[componentId];
     if (config) {
       const newId = `${config.type}-${Date.now()}`;
       setState(prev => ({
@@ -918,7 +903,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       }));
       console.log('Component added:', config.type, newId);
     } else {
-      console.log('Unknown component:', componentId);
+      console.log('Unknown component ID:', componentId);
     }
   }, [maxZIndex]);
 
@@ -964,10 +949,10 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             aria-label="Upload player image"
           />
           
-          {/* Canvas */}
+          {/* Canvas - Theme classes applied directly */}
           <div 
             ref={canvasRef}
-            className={`theme-${colorTheme} relative overflow-hidden shadow-2xl`}
+            className={`relative overflow-hidden shadow-2xl theme-${colorTheme}`}
             style={{
               width: `${CANVAS_WIDTH}px`,
               height: `${CANVAS_HEIGHT}px`,
@@ -1150,3 +1135,13 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 TemplateCanvas.displayName = 'TemplateCanvas';
+        }));
+
+        console.log('Background removed successfully!');
+      } else {
+        const imageUrl = URL.createObjectURL(file);
+        imageUrlRef.current = imageUrl;
+        
+        setState(prev => ({
+          ...prev,
+          playerImage: { ...prev.playerImage, imageUrl },

@@ -263,6 +263,10 @@ const COMPONENT_CONFIGS: Record<string, { type: keyof TemplateState; defaults: a
   // Text Labels
   'text-label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold' } },
   'text': { type: 'textLabels', defaults: { text: 'Text', fontSize: 20, fontWeight: 'normal', color: 'gold' } },
+  
+  // Chart - maps to the single chart instance
+  'line-chart': { type: 'chart', defaults: {} },
+  'chart': { type: 'chart', defaults: {} },
 };
 
 export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
@@ -600,21 +604,41 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       const circleIdx = prev.circles.findIndex(c => c.id === selectedComponent);
       if (circleIdx !== -1) {
         const updated = [...prev.circles];
-        updated[circleIdx] = { ...updated[circleIdx], ...data };
+        updated[circleIdx] = { 
+          ...updated[circleIdx], 
+          ...data,
+          // Ensure color changes are applied
+          ...(data.color && { color: data.color }),
+          ...(data.customColor && { customColor: data.customColor }),
+          ...(data.textColor && { textColor: data.textColor }),
+          ...(data.numberColor && { numberColor: data.numberColor }),
+        };
         return { ...prev, circles: updated };
       }
 
       const boxIdx = prev.boxes.findIndex(b => b.id === selectedComponent);
       if (boxIdx !== -1) {
         const updated = [...prev.boxes];
-        updated[boxIdx] = { ...updated[boxIdx], ...data };
+        updated[boxIdx] = { 
+          ...updated[boxIdx], 
+          ...data,
+          ...(data.customColor && { customColor: data.customColor }),
+          ...(data.textColor && { textColor: data.textColor }),
+          ...(data.numberColor && { numberColor: data.numberColor }),
+        };
         return { ...prev, boxes: updated };
       }
 
       const miniIdx = prev.miniStats.findIndex(m => m.id === selectedComponent);
       if (miniIdx !== -1) {
         const updated = [...prev.miniStats];
-        updated[miniIdx] = { ...updated[miniIdx], ...data };
+        updated[miniIdx] = { 
+          ...updated[miniIdx], 
+          ...data,
+          ...(data.customColor && { customColor: data.customColor }),
+          ...(data.textColor && { textColor: data.textColor }),
+          ...(data.numberColor && { numberColor: data.numberColor }),
+        };
         return { ...prev, miniStats: updated };
       }
 
@@ -623,33 +647,63 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         const updated = [...prev.progressBars];
         const numValue = parseInt(data.value || updated[barIdx].value.toString(), 10);
         const validValue = isNaN(numValue) ? 0 : Math.max(0, Math.min(100, numValue));
-        updated[barIdx] = { ...updated[barIdx], ...data, value: validValue };
+        updated[barIdx] = { 
+          ...updated[barIdx], 
+          ...data, 
+          value: validValue,
+          ...(data.color && { color: data.color }),
+          ...(data.customColor && { customColor: data.customColor }),
+        };
         return { ...prev, progressBars: updated };
       }
 
       const dividerIdx = prev.dividers.findIndex(d => d.id === selectedComponent);
       if (dividerIdx !== -1) {
         const updated = [...prev.dividers];
-        updated[dividerIdx] = { ...updated[dividerIdx], ...data };
+        updated[dividerIdx] = { 
+          ...updated[dividerIdx], 
+          ...data,
+          ...(data.color && { color: data.color }),
+          ...(data.customColor && { customColor: data.customColor }),
+        };
         return { ...prev, dividers: updated };
       }
 
       const iconIdx = prev.iconBadges.findIndex(i => i.id === selectedComponent);
       if (iconIdx !== -1) {
         const updated = [...prev.iconBadges];
-        updated[iconIdx] = { ...updated[iconIdx], ...data };
+        updated[iconIdx] = { 
+          ...updated[iconIdx], 
+          ...data,
+          ...(data.color && { color: data.color }),
+          ...(data.customColor && { customColor: data.customColor }),
+        };
         return { ...prev, iconBadges: updated };
       }
 
       const textIdx = prev.textLabels.findIndex(t => t.id === selectedComponent);
       if (textIdx !== -1) {
         const updated = [...prev.textLabels];
-        updated[textIdx] = { ...updated[textIdx], text: data.value || updated[textIdx].text, ...data };
+        updated[textIdx] = { 
+          ...updated[textIdx], 
+          text: data.value || updated[textIdx].text, 
+          ...data,
+          ...(data.color && { color: data.color }),
+          ...(data.customColor && { customColor: data.customColor }),
+        };
         return { ...prev, textLabels: updated };
       }
 
       if (selectedComponent === 'chart1') {
-        return { ...prev, chart: { ...prev.chart, title: data.label || prev.chart.title, ...data } };
+        return { 
+          ...prev, 
+          chart: { 
+            ...prev.chart, 
+            title: data.label || prev.chart.title, 
+            ...data,
+            ...(data.customColor && { customColor: data.customColor }),
+          } 
+        };
       }
 
       if (selectedComponent === 'rating') {
@@ -809,6 +863,16 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
           ...prev,
           playerImage: { ...prev.playerImage, imageUrl },
         }));
+
+        console.log('Background removed successfully!');
+      } else {
+        const imageUrl = URL.createObjectURL(file);
+        imageUrlRef.current = imageUrl;
+        
+        setState(prev => ({
+          ...prev,
+          playerImage: { ...prev.playerImage, imageUrl },
+        }));
         console.log('Image uploaded successfully!');
       }
     } catch (error) {
@@ -861,7 +925,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     }
 
     // Handle special single components (can't be duplicated)
-    const singleComponents = ['player-name', 'header', 'chart', 'rating', 'player-image'];
+    const singleComponents = ['player-name', 'header', 'chart', 'line-chart', 'rating', 'player-image'];
     if (singleComponents.includes(componentId)) {
       console.log(`${componentId} already exists - cannot add duplicate`);
       return;
@@ -888,6 +952,12 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     // Handle configured components
     const config = COMPONENT_CONFIGS[componentId];
     if (config) {
+      // For chart type, it's a single component not an array
+      if (config.type === 'chart') {
+        console.log('Chart already exists - cannot add duplicate');
+        return;
+      }
+      
       const newId = `${config.type}-${Date.now()}`;
       setState(prev => ({
         ...prev,
@@ -953,6 +1023,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
           <div 
             ref={canvasRef}
             className={`relative overflow-hidden shadow-2xl theme-${colorTheme}`}
+            key={`canvas-${colorTheme}`}
             style={{
               width: `${CANVAS_WIDTH}px`,
               height: `${CANVAS_HEIGHT}px`,

@@ -16,6 +16,7 @@ interface PlayerImageProps {
   isSelected: boolean;
   removeBackgroundEnabled?: boolean;
   onToggleRemoveBackground?: () => void;
+  zIndex?: number;
 }
 
 export const PlayerImage: React.FC<PlayerImageProps> = ({
@@ -32,6 +33,7 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
   isSelected,
   removeBackgroundEnabled = true,
   onToggleRemoveBackground,
+  zIndex = 5,
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -57,8 +59,10 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
       }}
       bounds="parent"
       className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
-      minWidth={100}
-      minHeight={100}
+      minWidth={80}
+      minHeight={80}
+      lockAspectRatio={false}
+      style={{ zIndex }}
     >
       <div
         className="w-full h-full flex items-center justify-center relative group"
@@ -80,6 +84,8 @@ export const PlayerImage: React.FC<PlayerImageProps> = ({
             >
               <Upload className="w-4 h-4 text-foreground" />
             </button>
+            {/* Resize handles visible on hover */}
+            <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/30 transition-colors pointer-events-none rounded" />
           </>
         ) : (
           <div

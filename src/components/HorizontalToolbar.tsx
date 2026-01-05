@@ -18,7 +18,18 @@ import {
   Flame,
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Image,
+  Upload,
+  Table,
+  LineChart as LineChartIcon,
+  TrendingUp,
+  Activity,
+  Percent,
+  Medal,
+  Users,
+  Timer,
+  MapPin
 } from 'lucide-react';
 import { 
   SoccerBall, Goal, Jersey, Whistle, Cleat, Pitch, 
@@ -41,6 +52,8 @@ const componentCategories = [
       { id: 'stat-box', name: 'Stat Box', icon: <Square className="w-5 h-5" /> },
       { id: 'mini-stat', name: 'Mini Stat', icon: <Hash className="w-5 h-5" /> },
       { id: 'progress-bar', name: 'Progress Bar', icon: <Minus className="w-5 h-5" /> },
+      { id: 'percent-stat', name: 'Percent', icon: <Percent className="w-5 h-5" /> },
+      { id: 'comparison-stat', name: 'Compare', icon: <TrendingUp className="w-5 h-5" /> },
     ]
   },
   {
@@ -70,6 +83,7 @@ const componentCategories = [
       { id: 'rating-badge', name: 'Rating', icon: <Star className="w-5 h-5" /> },
       { id: 'icon-trophy', name: 'Trophy', icon: <Trophy className="w-5 h-5" /> },
       { id: 'icon-award', name: 'Award', icon: <Award className="w-5 h-5" /> },
+      { id: 'icon-medal', name: 'Medal', icon: <Medal className="w-5 h-5" /> },
       { id: 'icon-target', name: 'Target', icon: <Target className="w-5 h-5" /> },
       { id: 'icon-crown', name: 'Crown', icon: <Crown className="w-5 h-5" /> },
       { id: 'icon-flame', name: 'Flame', icon: <Flame className="w-5 h-5" /> },
@@ -86,8 +100,9 @@ const componentCategories = [
     label: 'Charts',
     icon: <BarChart3 className="w-4 h-4" />,
     items: [
-      { id: 'line-chart', name: 'Line Chart', icon: <BarChart3 className="w-5 h-5" /> },
+      { id: 'line-chart', name: 'Line Chart', icon: <LineChartIcon className="w-5 h-5" /> },
       { id: 'bar-chart', name: 'Bar Chart', icon: <BarChart3 className="w-5 h-5" /> },
+      { id: 'activity-chart', name: 'Activity', icon: <Activity className="w-5 h-5" /> },
     ]
   },
   {
@@ -98,6 +113,18 @@ const componentCategories = [
       { id: 'player-name', name: 'Player Name', icon: <Type className="w-5 h-5" /> },
       { id: 'header-banner', name: 'Header', icon: <Type className="w-4 h-4" /> },
       { id: 'text-label', name: 'Label', icon: <Type className="w-3 h-3" /> },
+      { id: 'icon-timer', name: 'Timer', icon: <Timer className="w-5 h-5" /> },
+      { id: 'icon-location', name: 'Location', icon: <MapPin className="w-5 h-5" /> },
+    ]
+  },
+  {
+    id: 'media',
+    label: 'Media',
+    icon: <Image className="w-4 h-4" />,
+    items: [
+      { id: 'player-image', name: 'Player Image', icon: <Image className="w-5 h-5" /> },
+      { id: 'upload-icon', name: 'Upload Icon', icon: <Upload className="w-5 h-5" /> },
+      { id: 'icon-users', name: 'Team', icon: <Users className="w-5 h-5" /> },
     ]
   },
   {
@@ -107,6 +134,15 @@ const componentCategories = [
     items: [
       { id: 'divider-h', name: 'H-Line', icon: <Minus className="w-5 h-5" /> },
       { id: 'divider-v', name: 'V-Line', icon: <Minus className="w-5 h-5 rotate-90" /> },
+      { id: 'box-shape', name: 'Box', icon: <Square className="w-5 h-5" /> },
+    ]
+  },
+  {
+    id: 'data',
+    label: 'Data',
+    icon: <Table className="w-4 h-4" />,
+    items: [
+      { id: 'data-table', name: 'Data Table', icon: <Table className="w-5 h-5" /> },
     ]
   }
 ];
@@ -137,7 +173,7 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
 
   return (
     <div ref={toolbarRef} className="w-full bg-neutral-900 border-b border-neutral-800 shadow-lg relative" style={{ zIndex: 9999 }}>
-      <div className="flex items-center gap-1 px-2 py-1.5 overflow-x-auto scrollbar-thin">
+      <div className="flex items-center gap-1 px-2 py-1.5 overflow-visible">
         {componentCategories.map((category) => (
           <div key={category.id} className="relative flex-shrink-0">
             <button
@@ -159,7 +195,7 @@ export const HorizontalToolbar: React.FC<HorizontalToolbarProps> = ({ onAddCompo
 
             {expandedCategory === category.id && (
               <div 
-                className="absolute left-0 top-full mt-1 bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl min-w-[180px] p-1.5 max-h-[350px] overflow-y-auto"
+                className="absolute left-0 top-full mt-1 bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl min-w-[200px] p-1.5"
                 style={{ zIndex: 99999 }}
               >
                 <div className="grid grid-cols-2 gap-1">

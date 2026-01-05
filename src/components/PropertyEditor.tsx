@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Trash2, Palette, Maximize, Type, X } from 'lucide-react';
+import { Trash2, Palette, Maximize, Type, X, ArrowUp, ArrowDown, Layers } from 'lucide-react';
 
 export interface ComponentData {
   id: string;
-  type: 'circle' | 'box' | 'miniStat' | 'rating' | 'header' | 'playerName' | 'chart' | 'playerImage' | 'progressBar' | 'divider' | 'icon';
+  type: 'circle' | 'box' | 'miniStat' | 'rating' | 'header' | 'playerName' | 'chart' | 'playerImage' | 'progressBar' | 'divider' | 'icon' | 'text';
   value?: string;
   label?: string;
   sublabel?: string;
@@ -12,6 +12,9 @@ export interface ComponentData {
   size?: 'lg' | 'md' | 'sm';
   fontSize?: number;
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 interface PropertyEditorProps {
@@ -19,6 +22,8 @@ interface PropertyEditorProps {
   onUpdate: (data: Partial<ComponentData>) => void;
   onDelete: () => void;
   onClose: () => void;
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
 }
 
 export const PropertyEditor: React.FC<PropertyEditorProps> = ({
@@ -26,6 +31,8 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
   onUpdate,
   onDelete,
   onClose,
+  onBringToFront,
+  onSendToBack,
 }) => {
   const { t } = useTheme();
 
@@ -45,8 +52,11 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
   const customColors = [
     '#D4AF37', '#059669', '#3B82F6', '#DC2626', '#7C3AED', 
     '#F59E0B', '#10B981', '#EC4899', '#6366F1', '#14B8A6',
-    '#FFFFFF', '#94A3B8', '#1F2937', '#000000'
+    '#F97316', '#06B6D4', '#84CC16', '#EF4444', '#8B5CF6',
+    '#FFFFFF', '#94A3B8', '#64748B', '#1F2937', '#000000'
   ];
+
+  const showTextColors = ['circle', 'box', 'miniStat', 'rating', 'text', 'chart'].includes(component.type);
 
   return (
     <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4 space-y-4">
@@ -61,6 +71,30 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
         >
           <X className="w-4 h-4 text-neutral-400" />
         </button>
+      </div>
+
+      {/* Z-Index Controls */}
+      <div>
+        <label className="text-xs text-neutral-400 block mb-2 flex items-center gap-1">
+          <Layers className="w-3 h-3" />
+          Layer Order
+        </label>
+        <div className="flex gap-2">
+          <button
+            onClick={onBringToFront}
+            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded-lg transition-colors text-xs"
+          >
+            <ArrowUp className="w-3 h-3" />
+            Bring Front
+          </button>
+          <button
+            onClick={onSendToBack}
+            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded-lg transition-colors text-xs"
+          >
+            <ArrowDown className="w-3 h-3" />
+            Send Back
+          </button>
+        </div>
       </div>
 
       {/* Value Editor */}
@@ -113,13 +147,13 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
 
       {/* Custom Color Picker */}
       <div>
-        <label className="text-xs text-neutral-400 block mb-2">Custom Color</label>
-        <div className="grid grid-cols-7 gap-1">
+        <label className="text-xs text-neutral-400 block mb-2">Element Color</label>
+        <div className="grid grid-cols-10 gap-1">
           {customColors.map((color) => (
             <button
               key={color}
               onClick={() => onUpdate({ customColor: color })}
-              className={`w-6 h-6 rounded border transition-all ${
+              className={`w-5 h-5 rounded border transition-all ${
                 component.customColor === color ? 'border-white scale-110' : 'border-neutral-600'
               }`}
               style={{ backgroundColor: color }}
@@ -133,6 +167,55 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
           className="mt-2 w-full h-8 rounded cursor-pointer"
         />
       </div>
+
+      {/* Text/Number Color Pickers */}
+      {showTextColors && (
+        <>
+          <div>
+            <label className="text-xs text-neutral-400 block mb-2">Number/Value Color</label>
+            <div className="grid grid-cols-10 gap-1">
+              {customColors.map((color) => (
+                <button
+                  key={`num-${color}`}
+                  onClick={() => onUpdate({ numberColor: color })}
+                  className={`w-5 h-5 rounded border transition-all ${
+                    component.numberColor === color ? 'border-white scale-110' : 'border-neutral-600'
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+            <input
+              type="color"
+              value={component.numberColor || '#FFFFFF'}
+              onChange={(e) => onUpdate({ numberColor: e.target.value })}
+              className="mt-2 w-full h-6 rounded cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-neutral-400 block mb-2">Text/Label Color</label>
+            <div className="grid grid-cols-10 gap-1">
+              {customColors.map((color) => (
+                <button
+                  key={`text-${color}`}
+                  onClick={() => onUpdate({ textColor: color })}
+                  className={`w-5 h-5 rounded border transition-all ${
+                    component.textColor === color ? 'border-white scale-110' : 'border-neutral-600'
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+            <input
+              type="color"
+              value={component.textColor || '#94A3B8'}
+              onChange={(e) => onUpdate({ textColor: e.target.value })}
+              className="mt-2 w-full h-6 rounded cursor-pointer"
+            />
+          </div>
+        </>
+      )}
 
       {/* Size Selector */}
       {component.size !== undefined && (

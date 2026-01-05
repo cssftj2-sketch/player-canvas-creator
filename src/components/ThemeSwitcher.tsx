@@ -8,6 +8,9 @@ const themes: { id: ColorTheme; name: string; colors: string[] }[] = [
   { id: 'red-black', name: 'Red & Black', colors: ['#DC2626', '#1F2937'] },
   { id: 'purple-gold', name: 'Purple & Gold', colors: ['#7C3AED', '#F59E0B'] },
   { id: 'green-white', name: 'Green & White', colors: ['#10B981', '#F8FAFC'] },
+  { id: 'orange-navy', name: 'Orange & Navy', colors: ['#F97316', '#1E3A5F'] },
+  { id: 'cyan-magenta', name: 'Cyan & Magenta', colors: ['#06B6D4', '#EC4899'] },
+  { id: 'lime-slate', name: 'Lime & Slate', colors: ['#84CC16', '#475569'] },
 ];
 
 const languages: { id: Language; name: string; native: string }[] = [
@@ -18,6 +21,11 @@ const languages: { id: Language; name: string; native: string }[] = [
 export const ThemeSwitcher: React.FC = () => {
   const { colorTheme, setColorTheme, language, setLanguage, t } = useTheme();
 
+  const handleThemeChange = (themeId: ColorTheme) => {
+    console.log('Changing theme to:', themeId);
+    setColorTheme(themeId);
+  };
+
   return (
     <div className="flex flex-col gap-3 p-3 bg-neutral-800/50 rounded-lg border border-neutral-700">
       {/* Color Theme */}
@@ -26,22 +34,22 @@ export const ThemeSwitcher: React.FC = () => {
           <Palette className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-xs font-medium text-neutral-200">{t('theme.title')}</span>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="grid grid-cols-4 gap-1.5">
           {themes.map((theme) => (
             <button
               key={theme.id}
-              onClick={() => setColorTheme(theme.id)}
-              className={`relative flex items-center gap-0.5 p-1.5 rounded-md border transition-all ${
+              onClick={() => handleThemeChange(theme.id)}
+              className={`relative flex items-center justify-center gap-0.5 p-1.5 rounded-md border transition-all ${
                 colorTheme === theme.id
-                  ? 'border-amber-500 ring-1 ring-amber-500/30'
-                  : 'border-neutral-600 hover:border-neutral-500'
+                  ? 'border-amber-500 ring-2 ring-amber-500/30 bg-neutral-700/50'
+                  : 'border-neutral-600 hover:border-neutral-500 hover:bg-neutral-700/30'
               }`}
               title={theme.name}
             >
               {theme.colors.map((color, i) => (
                 <div
                   key={i}
-                  className="w-4 h-4 rounded-full"
+                  className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: color }}
                 />
               ))}

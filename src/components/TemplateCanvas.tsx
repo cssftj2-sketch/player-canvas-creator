@@ -17,11 +17,13 @@ import { Divider } from './Divider';
 import { IconBadge, IconType } from './IconBadge';
 import { TextLabel } from './TextLabel';
 import { HorizontalToolbar } from './HorizontalToolbar';
+import { DataTable } from './DataTable';
 import AIPlayerSearch from './AIPlayerSearch';
 import { FontSelector } from './FontSelector';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
+import { Table } from 'lucide-react';
 
 interface CircleState {
   id: string;
@@ -31,6 +33,9 @@ interface CircleState {
   size: 'lg' | 'md' | 'sm';
   position: { x: number; y: number };
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 interface BoxState {
@@ -40,6 +45,9 @@ interface BoxState {
   subStats?: { label: string; value: string }[];
   position: { x: number; y: number };
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 interface MiniStatState {
@@ -49,6 +57,9 @@ interface MiniStatState {
   sublabel?: string;
   position: { x: number; y: number };
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 interface ProgressBarState {
@@ -59,6 +70,7 @@ interface ProgressBarState {
   position: { x: number; y: number };
   size: { width: number; height: number };
   customColor?: string;
+  zIndex?: number;
 }
 
 interface DividerState {
@@ -68,6 +80,7 @@ interface DividerState {
   position: { x: number; y: number };
   size: { width: number; height: number };
   customColor?: string;
+  zIndex?: number;
 }
 
 interface IconBadgeState {
@@ -77,6 +90,7 @@ interface IconBadgeState {
   size: 'lg' | 'md' | 'sm';
   position: { x: number; y: number };
   customColor?: string;
+  zIndex?: number;
 }
 
 interface TextLabelState {
@@ -87,6 +101,16 @@ interface TextLabelState {
   color: 'gold' | 'emerald';
   position: { x: number; y: number };
   customColor?: string;
+  zIndex?: number;
+}
+
+interface ChartState {
+  id: string;
+  data: { value: number }[];
+  title: string;
+  position: { x: number; y: number };
+  customColor?: string;
+  zIndex?: number;
 }
 
 interface TemplateState {
@@ -99,24 +123,22 @@ interface TemplateState {
     number: string;
     country: string;
     position: { x: number; y: number };
+    zIndex?: number;
   };
-  chart: {
-    id: string;
-    data: { value: number }[];
-    title: string;
-    position: { x: number; y: number };
-  };
+  chart: ChartState;
   playerImage: {
     id: string;
     imageUrl: string | null;
     position: { x: number; y: number };
     size: { width: number; height: number };
+    zIndex?: number;
   };
   header: {
     id: string;
     title: string;
     subtitle: string;
     position: { x: number; y: number };
+    zIndex?: number;
   };
   miniStats: MiniStatState[];
   rating: {
@@ -124,6 +146,7 @@ interface TemplateState {
     value: string;
     label: string;
     position: { x: number; y: number };
+    zIndex?: number;
   };
   progressBars: ProgressBarState[];
   dividers: DividerState[];
@@ -133,9 +156,9 @@ interface TemplateState {
 
 const initialState: TemplateState = {
   circles: [
-    { id: 'circle1', value: '78%', label: 'passaggi riusciti', color: 'gold', size: 'lg', position: { x: 40, y: 100 } },
-    { id: 'circle2', value: '52%', label: 'contrasti vinti', color: 'emerald', size: 'md', position: { x: 80, y: 280 } },
-    { id: 'circle3', value: '85%', label: 'precisione tiri', color: 'gold', size: 'sm', position: { x: 40, y: 420 } },
+    { id: 'circle1', value: '78%', label: 'passaggi riusciti', color: 'gold', size: 'lg', position: { x: 40, y: 100 }, zIndex: 10 },
+    { id: 'circle2', value: '52%', label: 'contrasti vinti', color: 'emerald', size: 'md', position: { x: 80, y: 280 }, zIndex: 10 },
+    { id: 'circle3', value: '85%', label: 'precisione tiri', color: 'gold', size: 'sm', position: { x: 40, y: 420 }, zIndex: 10 },
   ],
   boxes: [
     { 
@@ -146,7 +169,8 @@ const initialState: TemplateState = {
         { label: 'Bundesliga', value: '4|0' },
         { label: 'Algeria', value: '1|0' }
       ],
-      position: { x: 30, y: 540 } 
+      position: { x: 30, y: 540 },
+      zIndex: 10
     },
   ],
   playerName: {
@@ -156,6 +180,7 @@ const initialState: TemplateState = {
     number: '22',
     country: 'ALGERIA',
     position: { x: 420, y: 320 },
+    zIndex: 15
   },
   chart: {
     id: 'chart1',
@@ -166,29 +191,33 @@ const initialState: TemplateState = {
     ],
     title: 'MATCH PERFORMANCE',
     position: { x: 480, y: 520 },
+    zIndex: 10
   },
   playerImage: {
     id: 'playerImage',
     imageUrl: null,
     position: { x: 220, y: 120 },
     size: { width: 350, height: 450 },
+    zIndex: 5
   },
   header: {
     id: 'header',
     title: 'FANTASTATISTICHE',
     subtitle: '4ª GIORNATA RITORNO',
     position: { x: 30, y: 20 },
+    zIndex: 20
   },
   miniStats: [
-    { id: 'mini1', value: '684', label: 'MIN', sublabel: 'giocati', position: { x: 300, y: 590 } },
-    { id: 'mini2', value: '19', label: 'TIRI', sublabel: 'totali', position: { x: 200, y: 680 } },
-    { id: 'mini3', value: '26', label: 'SCA', sublabel: 'azioni create', position: { x: 310, y: 680 } },
+    { id: 'mini1', value: '684', label: 'MIN', sublabel: 'giocati', position: { x: 300, y: 590 }, zIndex: 10 },
+    { id: 'mini2', value: '19', label: 'TIRI', sublabel: 'totali', position: { x: 200, y: 680 }, zIndex: 10 },
+    { id: 'mini3', value: '26', label: 'SCA', sublabel: 'azioni create', position: { x: 310, y: 680 }, zIndex: 10 },
   ],
   rating: {
     id: 'rating',
     value: '7.2',
     label: 'FANTAMEDIA',
     position: { x: 30, y: 680 },
+    zIndex: 10
   },
   progressBars: [],
   dividers: [],
@@ -203,6 +232,8 @@ export const TemplateCanvas: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [removeBackgroundEnabled, setRemoveBackgroundEnabled] = useState(true);
+  const [showDataTable, setShowDataTable] = useState(false);
+  const [maxZIndex, setMaxZIndex] = useState(20);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -227,8 +258,21 @@ export const TemplateCanvas: React.FC = () => {
     setSelectedComponent(id);
   };
 
+  const handleBringToFront = () => {
+    if (!selectedComponent) return;
+    const newZ = maxZIndex + 1;
+    setMaxZIndex(newZ);
+    handleUpdateComponent({ zIndex: newZ });
+    toast.success('Brought to front');
+  };
+
+  const handleSendToBack = () => {
+    if (!selectedComponent) return;
+    handleUpdateComponent({ zIndex: 1 });
+    toast.success('Sent to back');
+  };
+
   const handlePlayerSelect = useCallback((playerData: any) => {
-    // Update player name
     setState(prev => ({
       ...prev,
       playerName: {
@@ -237,7 +281,6 @@ export const TemplateCanvas: React.FC = () => {
         lastName: playerData.name.split(' ').slice(1).join(' ') || '',
         country: playerData.nationality,
       },
-      // Update stats
       circles: prev.circles.map((circle, idx) => {
         if (idx === 0) return { ...circle, value: `${playerData.stats.passAccuracy}%`, label: 'Pass Accuracy' };
         if (idx === 1) return { ...circle, value: `${playerData.stats.tacklesWon}`, label: 'Tackles Won' };
@@ -260,6 +303,29 @@ export const TemplateCanvas: React.FC = () => {
     }));
   }, []);
 
+  const handleDataTableChange = useCallback((data: any[]) => {
+    // Update canvas elements based on data table
+    setState(prev => {
+      const newMiniStats = [...prev.miniStats];
+      const newCircles = [...prev.circles];
+      
+      data.forEach((row, idx) => {
+        if (idx < newMiniStats.length) {
+          newMiniStats[idx] = {
+            ...newMiniStats[idx],
+            value: row.value,
+            label: row.label,
+          };
+        }
+      });
+
+      return { ...prev, miniStats: newMiniStats };
+    });
+    
+    setShowDataTable(false);
+    toast.success('Data synced to canvas');
+  }, []);
+
   const getSelectedComponentData = (): ComponentData | null => {
     if (!selectedComponent) return null;
 
@@ -273,6 +339,9 @@ export const TemplateCanvas: React.FC = () => {
         color: circle.color,
         size: circle.size,
         customColor: circle.customColor,
+        textColor: circle.textColor,
+        numberColor: circle.numberColor,
+        zIndex: circle.zIndex,
       };
     }
 
@@ -284,6 +353,9 @@ export const TemplateCanvas: React.FC = () => {
         value: box.value,
         label: box.label,
         customColor: box.customColor,
+        textColor: box.textColor,
+        numberColor: box.numberColor,
+        zIndex: box.zIndex,
       };
     }
 
@@ -296,6 +368,9 @@ export const TemplateCanvas: React.FC = () => {
         label: mini.label,
         sublabel: mini.sublabel,
         customColor: mini.customColor,
+        textColor: mini.textColor,
+        numberColor: mini.numberColor,
+        zIndex: mini.zIndex,
       };
     }
 
@@ -308,6 +383,7 @@ export const TemplateCanvas: React.FC = () => {
         label: bar.label,
         color: bar.color,
         customColor: bar.customColor,
+        zIndex: bar.zIndex,
       };
     }
 
@@ -318,6 +394,7 @@ export const TemplateCanvas: React.FC = () => {
         type: 'divider',
         color: divider.color,
         customColor: divider.customColor,
+        zIndex: divider.zIndex,
       };
     }
 
@@ -329,6 +406,7 @@ export const TemplateCanvas: React.FC = () => {
         color: icon.color,
         size: icon.size,
         customColor: icon.customColor,
+        zIndex: icon.zIndex,
       };
     }
 
@@ -336,11 +414,22 @@ export const TemplateCanvas: React.FC = () => {
     if (text) {
       return {
         id: text.id,
-        type: 'chart',
+        type: 'text',
         value: text.text,
         fontSize: text.fontSize,
         color: text.color,
         customColor: text.customColor,
+        zIndex: text.zIndex,
+      };
+    }
+
+    if (selectedComponent === 'chart1') {
+      return {
+        id: 'chart1',
+        type: 'chart',
+        label: state.chart.title,
+        customColor: state.chart.customColor,
+        zIndex: state.chart.zIndex,
       };
     }
 
@@ -350,6 +439,7 @@ export const TemplateCanvas: React.FC = () => {
         type: 'rating',
         value: state.rating.value,
         label: state.rating.label,
+        zIndex: state.rating.zIndex,
       };
     }
 
@@ -409,6 +499,10 @@ export const TemplateCanvas: React.FC = () => {
         const updated = [...prev.textLabels];
         updated[textIdx] = { ...updated[textIdx], text: data.value || updated[textIdx].text, ...data };
         return { ...prev, textLabels: updated };
+      }
+
+      if (selectedComponent === 'chart1') {
+        return { ...prev, chart: { ...prev.chart, title: data.label || prev.chart.title, ...data } };
       }
 
       if (selectedComponent === 'rating') {
@@ -591,6 +685,8 @@ export const TemplateCanvas: React.FC = () => {
   const handleAddComponent = useCallback((componentId: string) => {
     const centerX = 350;
     const centerY = 400;
+    const newZ = maxZIndex + 1;
+    setMaxZIndex(newZ);
     
     switch (componentId) {
       case 'circle-lg':
@@ -603,6 +699,7 @@ export const TemplateCanvas: React.FC = () => {
             color: 'gold',
             size: 'lg',
             position: { x: centerX, y: centerY },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -616,6 +713,7 @@ export const TemplateCanvas: React.FC = () => {
             color: 'emerald',
             size: 'md',
             position: { x: centerX, y: centerY },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -629,6 +727,7 @@ export const TemplateCanvas: React.FC = () => {
             color: 'gold',
             size: 'sm',
             position: { x: centerX, y: centerY },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -641,6 +740,7 @@ export const TemplateCanvas: React.FC = () => {
             label: 'STAT',
             sublabel: 'label',
             position: { x: centerX, y: centerY },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -652,6 +752,7 @@ export const TemplateCanvas: React.FC = () => {
             value: '0',
             label: 'NEW',
             position: { x: centerX, y: centerY },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -665,6 +766,7 @@ export const TemplateCanvas: React.FC = () => {
             color: 'gold',
             position: { x: centerX, y: centerY },
             size: { width: 200, height: 40 },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -677,6 +779,7 @@ export const TemplateCanvas: React.FC = () => {
             color: 'gold',
             position: { x: centerX, y: centerY },
             size: { width: 150, height: 4 },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -689,11 +792,16 @@ export const TemplateCanvas: React.FC = () => {
             color: 'gold',
             position: { x: centerX, y: centerY },
             size: { width: 4, height: 100 },
+            zIndex: newZ,
           }],
         }));
         break;
+      case 'data-table':
+        setShowDataTable(true);
+        break;
       case 'icon-trophy':
       case 'icon-award':
+      case 'icon-medal':
       case 'icon-target':
       case 'icon-crown':
       case 'icon-flame':
@@ -715,6 +823,9 @@ export const TemplateCanvas: React.FC = () => {
       case 'icon-yellow-card':
       case 'icon-formation':
       case 'icon-captain':
+      case 'icon-timer':
+      case 'icon-location':
+      case 'icon-users':
         const iconType = componentId.replace('icon-', '') as IconType;
         setState(prev => ({
           ...prev,
@@ -724,6 +835,7 @@ export const TemplateCanvas: React.FC = () => {
             color: 'gold',
             size: 'md',
             position: { x: centerX, y: centerY },
+            zIndex: newZ,
           }],
         }));
         break;
@@ -737,18 +849,19 @@ export const TemplateCanvas: React.FC = () => {
             fontWeight: 'bold',
             color: 'gold',
             position: { x: centerX, y: centerY },
+            zIndex: newZ,
           }],
         }));
         break;
       default:
         toast.info('Component added to canvas');
     }
-  }, []);
+  }, [maxZIndex]);
 
   return (
     <div className={`relative w-full min-h-screen flex flex-col ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
       {/* Horizontal Toolbar */}
-      <div className="w-full">
+      <div className="w-full" style={{ overflow: 'visible' }}>
         <HorizontalToolbar onAddComponent={handleAddComponent} />
       </div>
 
@@ -759,6 +872,16 @@ export const TemplateCanvas: React.FC = () => {
           <FontSelector />
           <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />
           <BackgroundEditor />
+          
+          {/* Data Table Button */}
+          <button
+            onClick={() => setShowDataTable(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700 rounded-lg transition-colors text-sm text-neutral-200"
+          >
+            <Table className="w-4 h-4 text-amber-400" />
+            Open Data Table
+          </button>
+          
           <ExportControls canvasRef={canvasRef} />
         </aside>
 
@@ -772,10 +895,10 @@ export const TemplateCanvas: React.FC = () => {
             className="hidden"
           />
           
-          {/* Canvas - Theme is applied here */}
+          {/* Canvas - Theme is applied here, no border for clean exports */}
           <div 
             ref={canvasRef}
-            className={`theme-${colorTheme} relative w-[750px] h-[850px] rounded-2xl overflow-hidden shadow-2xl border border-border`}
+            className={`theme-${colorTheme} relative w-[750px] h-[850px] overflow-hidden shadow-2xl`}
             style={getBackgroundStyle()}
             onClick={handleCanvasClick}
           >
@@ -934,10 +1057,20 @@ export const TemplateCanvas: React.FC = () => {
               onUpdate={handleUpdateComponent}
               onDelete={handleDeleteComponent}
               onClose={() => setSelectedComponent(null)}
+              onBringToFront={handleBringToFront}
+              onSendToBack={handleSendToBack}
             />
           </aside>
         )}
       </div>
+
+      {/* Data Table Modal */}
+      {showDataTable && (
+        <DataTable 
+          onDataChange={handleDataTableChange}
+          onClose={() => setShowDataTable(false)}
+        />
+      )}
     </div>
   );
 };

@@ -13,6 +13,9 @@ interface StatCircleProps {
   onSelect: (id: string) => void;
   isSelected: boolean;
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 const sizeClasses = {
@@ -54,6 +57,9 @@ export const StatCircle: React.FC<StatCircleProps> = ({
   onSelect,
   isSelected,
   customColor,
+  textColor,
+  numberColor,
+  zIndex = 10,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -141,12 +147,15 @@ export const StatCircle: React.FC<StatCircleProps> = ({
         ) : (
           <>
             <span 
-              className={`font-display ${sizeClasses[size].text} ${!customColor ? colorClasses[color].text : ''} z-10`}
-              style={{ color: customColor || undefined }}
+              className={`font-display ${sizeClasses[size].text} ${!customColor && !numberColor ? colorClasses[color].text : ''} z-10`}
+              style={{ color: numberColor || customColor || undefined }}
             >
               {value}
             </span>
-            <span className={`${sizeClasses[size].label} text-foreground/80 text-center leading-tight z-10 px-2`}>
+            <span 
+              className={`${sizeClasses[size].label} text-center leading-tight z-10 px-2`}
+              style={{ color: textColor || 'hsl(var(--foreground) / 0.8)' }}
+            >
               {label}
             </span>
           </>

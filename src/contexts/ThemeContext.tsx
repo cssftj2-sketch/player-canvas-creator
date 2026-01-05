@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-export type ColorTheme = 'gold-emerald' | 'blue-silver' | 'red-black' | 'purple-gold' | 'green-white';
+export type ColorTheme = 'gold-emerald' | 'blue-silver' | 'red-black' | 'purple-gold' | 'green-white' | 'orange-navy' | 'cyan-magenta' | 'lime-slate';
 export type Language = 'en' | 'ar';
-export type FontCombination = 'modern' | 'classic' | 'bold' | 'elegant' | 'tech';
+export type FontCombination = 'modern' | 'classic' | 'bold' | 'elegant' | 'tech' | 'sport' | 'minimal' | 'retro' | 'luxury' | 'dynamic';
 
 export interface CanvasBackground {
   type: 'solid' | 'gradient' | 'radial';
@@ -42,6 +42,31 @@ const fontCombinations: Record<FontCombination, FontConfig> = {
     display: "'Orbitron', sans-serif",
     heading: "'Rajdhani', sans-serif",
     body: "'IBM Plex Sans', sans-serif"
+  },
+  sport: {
+    display: "'Teko', sans-serif",
+    heading: "'Barlow Condensed', sans-serif",
+    body: "'Source Sans 3', sans-serif"
+  },
+  minimal: {
+    display: "'Poppins', sans-serif",
+    heading: "'DM Sans', sans-serif",
+    body: "'Inter', sans-serif"
+  },
+  retro: {
+    display: "'Righteous', cursive",
+    heading: "'Archivo Black', sans-serif",
+    body: "'Rubik', sans-serif"
+  },
+  luxury: {
+    display: "'Cinzel', serif",
+    heading: "'Marcellus', serif",
+    body: "'Questrial', sans-serif"
+  },
+  dynamic: {
+    display: "'Black Ops One', cursive",
+    heading: "'Russo One', sans-serif",
+    body: "'Exo 2', sans-serif"
   }
 };
 
@@ -76,6 +101,11 @@ const translations: Record<Language, Record<string, string>> = {
     'fonts.bold': 'Bold',
     'fonts.elegant': 'Elegant',
     'fonts.tech': 'Tech',
+    'fonts.sport': 'Sport',
+    'fonts.minimal': 'Minimal',
+    'fonts.retro': 'Retro',
+    'fonts.luxury': 'Luxury',
+    'fonts.dynamic': 'Dynamic',
     'library.title': 'Components',
     'library.stats': 'Statistics',
     'library.badges': 'Badges',
@@ -126,6 +156,11 @@ const translations: Record<Language, Record<string, string>> = {
     'fonts.bold': 'عريض',
     'fonts.elegant': 'أنيق',
     'fonts.tech': 'تقني',
+    'fonts.sport': 'رياضي',
+    'fonts.minimal': 'بسيط',
+    'fonts.retro': 'كلاسيكي',
+    'fonts.luxury': 'فاخر',
+    'fonts.dynamic': 'ديناميكي',
     'library.title': 'المكونات',
     'library.stats': 'الإحصائيات',
     'library.badges': 'الشارات',
@@ -179,9 +214,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const t = (key: string): string => {
     return translations[language][key] || key;
   };
-
-  // Theme class is applied per-canvas only, not to document root
-  // This prevents affecting the app chrome
 
   // Apply font combination
   useEffect(() => {

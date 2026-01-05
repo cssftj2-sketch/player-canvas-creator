@@ -3,8 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import all fonts - Modern, Classic, Bold, Elegant, Tech + Arabic */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Lora:wght@400;600&family=Anton&family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500;700&family=Cormorant+Garamond:wght@400;600;700&family=Raleway:wght@400;600;700&family=Nunito:wght@400;600;700&family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600&display=swap');
+/* Import all fonts - Modern, Classic, Bold, Elegant, Tech + Arabic + New fonts */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Lora:wght@400;600&family=Anton&family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500;700&family=Cormorant+Garamond:wght@400;600;700&family=Raleway:wght@400;600;700&family=Nunito:wght@400;600;700&family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600&family=Teko:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@400;600;700&family=DM+Sans:wght@400;600;700&family=Righteous&family=Archivo+Black&family=Rubik:wght@400;500;600&family=Cinzel:wght@400;700&family=Marcellus&family=Questrial&family=Black+Ops+One&family=Russo+One&family=Exo+2:wght@400;600;700&display=swap');
 
 @layer base {
   :root {
@@ -132,6 +132,48 @@
     --emerald-glow: 210 20% 90%;
     --accent: 160 84% 39%;
     --ring: 160 84% 39%;
+  }
+
+  /* Orange & Navy Theme */
+  .theme-orange-navy {
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 213 50% 25%;
+    --secondary-foreground: 0 0% 100%;
+    --gold: 25 95% 53%;
+    --gold-glow: 25 95% 63%;
+    --emerald: 213 50% 35%;
+    --emerald-glow: 213 50% 45%;
+    --accent: 25 95% 53%;
+    --ring: 25 95% 53%;
+  }
+
+  /* Cyan & Magenta Theme */
+  .theme-cyan-magenta {
+    --primary: 188 94% 43%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 330 81% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --gold: 188 94% 43%;
+    --gold-glow: 188 94% 53%;
+    --emerald: 330 81% 60%;
+    --emerald-glow: 330 81% 70%;
+    --accent: 188 94% 43%;
+    --ring: 188 94% 43%;
+  }
+
+  /* Lime & Slate Theme */
+  .theme-lime-slate {
+    --primary: 84 81% 44%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 215 16% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --gold: 84 81% 44%;
+    --gold-glow: 84 81% 54%;
+    --emerald: 215 16% 57%;
+    --emerald-glow: 215 16% 67%;
+    --accent: 84 81% 44%;
+    --ring: 84 81% 44%;
   }
 
   .dark {

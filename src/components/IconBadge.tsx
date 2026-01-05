@@ -2,14 +2,15 @@ import React from 'react';
 import { Rnd } from 'react-rnd';
 import { 
   Trophy, Star, Target, Award, Zap, Heart, 
-  Shield, Flag, Medal, Crown, Flame, Sparkles 
+  Shield, Flag, Medal, Crown, Flame, Sparkles,
+  Timer, MapPin, Users, Upload
 } from 'lucide-react';
 import { 
   SoccerBall, Goal, Jersey, Whistle, Cleat, Pitch, 
   Stopwatch, RedCard, YellowCard, Formation, GoalNet, Captain 
 } from './SoccerIcons';
 
-export type IconType = 'trophy' | 'star' | 'target' | 'award' | 'zap' | 'heart' | 'shield' | 'flag' | 'medal' | 'crown' | 'flame' | 'sparkles' | 'soccer-ball' | 'goal' | 'jersey' | 'whistle' | 'cleat' | 'pitch' | 'stopwatch' | 'red-card' | 'yellow-card' | 'formation' | 'goal-net' | 'captain';
+export type IconType = 'trophy' | 'star' | 'target' | 'award' | 'zap' | 'heart' | 'shield' | 'flag' | 'medal' | 'crown' | 'flame' | 'sparkles' | 'soccer-ball' | 'goal' | 'jersey' | 'whistle' | 'cleat' | 'pitch' | 'stopwatch' | 'red-card' | 'yellow-card' | 'formation' | 'goal-net' | 'captain' | 'timer' | 'location' | 'users' | 'upload';
 
 interface IconBadgeProps {
   id: string;
@@ -21,9 +22,10 @@ interface IconBadgeProps {
   onSelect: (id: string) => void;
   isSelected: boolean;
   customColor?: string;
+  zIndex?: number;
 }
 
-const iconMap = {
+const iconMap: Record<IconType, React.ComponentType<any>> = {
   trophy: Trophy,
   star: Star,
   target: Target,
@@ -48,6 +50,10 @@ const iconMap = {
   formation: Formation,
   'goal-net': GoalNet,
   captain: Captain,
+  timer: Timer,
+  location: MapPin,
+  users: Users,
+  upload: Upload,
 };
 
 const sizeClasses = {
@@ -87,8 +93,9 @@ export const IconBadge: React.FC<IconBadgeProps> = ({
   onSelect,
   isSelected,
   customColor,
+  zIndex = 10,
 }) => {
-  const IconComponent = iconMap[icon];
+  const IconComponent = iconMap[icon] || Star;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -103,6 +110,7 @@ export const IconBadge: React.FC<IconBadgeProps> = ({
       enableResizing={false}
       bounds="parent"
       className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+      style={{ zIndex }}
     >
       <div
         className={`${sizeClasses[size].container} flex items-center justify-center rounded-xl ${!customColor ? colorClasses[color].bg : ''} ${!customColor ? colorClasses[color].border : ''} border-2 ${!customColor ? colorClasses[color].glow : ''} transition-all hover:scale-105`}

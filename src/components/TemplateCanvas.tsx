@@ -21,7 +21,6 @@ import AIPlayerSearch from './AIPlayerSearch';
 import { FontSelector } from './FontSelector';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme } from '@/contexts/ThemeContext';
-import { toast, Toaster } from 'sonner';
 import { Table } from 'lucide-react';
 
 // Type definitions
@@ -321,13 +320,13 @@ export const TemplateCanvas: React.FC = () => {
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
     handleUpdateComponent({ zIndex: newZ });
-    toast.success('Brought to front');
+    console.log('Brought to front');
   }, [selectedComponent, maxZIndex]);
 
   const handleSendToBack = useCallback(() => {
     if (!selectedComponent) return;
     handleUpdateComponent({ zIndex: 1 });
-    toast.success('Sent to back');
+    console.log('Sent to back');
   }, [selectedComponent]);
 
   const handlePlayerSelect = useCallback((playerData: PlayerData) => {
@@ -373,7 +372,6 @@ export const TemplateCanvas: React.FC = () => {
       toast.success('Player data loaded successfully');
     } catch (error) {
       console.error('Error loading player data:', error);
-      toast.error('Failed to load player data');
     }
   }, []);
 
@@ -396,10 +394,9 @@ export const TemplateCanvas: React.FC = () => {
       });
       
       setShowDataTable(false);
-      toast.success('Data synced to canvas');
+      console.log('Data synced to canvas');
     } catch (error) {
       console.error('Error syncing data:', error);
-      toast.error('Failed to sync data');
     }
   }, []);
 
@@ -604,7 +601,7 @@ export const TemplateCanvas: React.FC = () => {
       textLabels: prev.textLabels.filter(t => t.id !== selectedComponent),
     }));
     setSelectedComponent(null);
-    toast.success('Component deleted');
+    console.log('Component deleted');
   }, [selectedComponent]);
 
   const updatePosition = useCallback((category: keyof TemplateState, id: string, position: Position) => {
@@ -726,7 +723,7 @@ export const TemplateCanvas: React.FC = () => {
       if (shouldRemoveBackground) {
         setIsProcessing(true);
         setProgress(0);
-        toast.info(t('upload.processing') || 'Processing image...', { duration: 2000 });
+        console.log('Processing image...');
 
         const img = await loadImage(file);
         setProgress(20);
@@ -740,7 +737,7 @@ export const TemplateCanvas: React.FC = () => {
           playerImage: { ...prev.playerImage, imageUrl },
         }));
 
-        toast.success('Background removed successfully!');
+        console.log('Background removed successfully!');
       } else {
         const imageUrl = URL.createObjectURL(file);
         imageUrlRef.current = imageUrl;
@@ -749,11 +746,10 @@ export const TemplateCanvas: React.FC = () => {
           ...prev,
           playerImage: { ...prev.playerImage, imageUrl },
         }));
-        toast.success('Image uploaded successfully!');
+        console.log('Image uploaded successfully!');
       }
     } catch (error) {
       console.error('Error processing image:', error);
-      toast.error('Failed to process image. Using original.');
       
       const imageUrl = URL.createObjectURL(file);
       imageUrlRef.current = imageUrl;
@@ -774,14 +770,14 @@ export const TemplateCanvas: React.FC = () => {
 
     // Validate file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      toast.error('Please upload a valid image file (JPEG, PNG, or WebP)');
+      console.error('Invalid file type');
       e.target.value = '';
       return;
     }
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('File size must be less than 10MB');
+      console.error('File too large');
       e.target.value = '';
       return;
     }
@@ -791,6 +787,7 @@ export const TemplateCanvas: React.FC = () => {
   }, [processImage, removeBackgroundEnabled]);
 
   const handleAddComponent = useCallback((componentId: string) => {
+    console.log('Adding component:', componentId);
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
     
@@ -814,7 +811,7 @@ export const TemplateCanvas: React.FC = () => {
           zIndex: newZ,
         }],
       }));
-      toast.success('Icon added to canvas');
+      console.log('Icon added:', iconType);
       return;
     }
 
@@ -834,7 +831,9 @@ export const TemplateCanvas: React.FC = () => {
           }
         ],
       }));
-      toast.success('Component added to canvas');
+      console.log('Component added:', config.type, newId);
+    } else {
+      console.log('Unknown component:', componentId);
     }
   }, [maxZIndex]);
 
@@ -842,7 +841,6 @@ export const TemplateCanvas: React.FC = () => {
 
   return (
     <div className={`relative w-full min-h-screen flex flex-col ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-      <Toaster position="top-center" richColors />
       
       {/* Horizontal Toolbar */}
       <div className="w-full" style={{ overflow: 'visible' }}>

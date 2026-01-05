@@ -244,6 +244,7 @@ const COMPONENT_CONFIGS = {
   'circle-sm': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'sm' } },
   'mini-stat': { type: 'miniStats', defaults: { value: '0', label: 'STAT', sublabel: 'label' } },
   'stat-box': { type: 'boxes', defaults: { value: '0', label: 'NEW' } },
+  'box-shape': { type: 'boxes', defaults: { value: '0', label: 'BOX' } },
   'progress-bar': { type: 'progressBars', defaults: { value: 75, label: 'Progress', color: 'gold', size: { width: 200, height: 40 } } },
   'divider-h': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
   'divider-v': { type: 'dividers', defaults: { orientation: 'vertical', color: 'gold', size: { width: 4, height: 100 } } },
@@ -852,6 +853,32 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     // Handle data table separately
     if (componentId === 'data-table') {
       setShowDataTable(true);
+      return;
+    }
+
+    // Handle special single components
+    if (componentId === 'player-name') {
+      console.log('Player name already exists - cannot add duplicate');
+      return;
+    }
+
+    if (componentId === 'header') {
+      console.log('Header already exists - cannot add duplicate');
+      return;
+    }
+
+    if (componentId === 'chart') {
+      console.log('Chart already exists - cannot add duplicate');
+      return;
+    }
+
+    if (componentId === 'rating') {
+      console.log('Rating already exists - cannot add duplicate');
+      return;
+    }
+
+    if (componentId === 'player-image') {
+      console.log('Player image already exists - cannot add duplicate');
       return;
     }
 

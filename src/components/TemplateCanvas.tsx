@@ -22,7 +22,6 @@ import { FontSelector } from './FontSelector';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Table } from 'lucide-react';
-import { toast } from 'react-hot-toast'; // ADDED: Missing import
 
 // Type definitions
 interface Position {
@@ -249,7 +248,7 @@ const COMPONENT_CONFIGS = {
   'divider-h': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
   'divider-v': { type: 'dividers', defaults: { orientation: 'vertical', color: 'gold', size: { width: 4, height: 100 } } },
   'text-label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold' } },
-} as const;
+};
 
 export const TemplateCanvas: React.FC = () => {
   const { t, isRTL, canvasBackground, colorTheme } = useTheme();
@@ -318,50 +317,11 @@ export const TemplateCanvas: React.FC = () => {
 
   const handleBringToFront = useCallback(() => {
     if (!selectedComponent) return;
-    
-    setState(prev => {
-      // Determine new Z based on current state immediately to avoid race conditions
-      const allZIndexes = [
-        ...prev.circles.map(c => c.zIndex || 0),
-        ...prev.boxes.map(b => b.zIndex || 0),
-        ...prev.miniStats.map(m => m.zIndex || 0),
-        ...prev.progressBars.map(p => p.zIndex || 0),
-        ...prev.dividers.map(d => d.zIndex || 0),
-        ...prev.iconBadges.map(i => i.zIndex || 0),
-        ...prev.textLabels.map(t => t.zIndex || 0),
-        prev.playerName.zIndex || 0,
-        prev.chart.zIndex || 0,
-        prev.playerImage.zIndex || 0,
-        prev.header.zIndex || 0,
-        prev.rating.zIndex || 0,
-      ];
-      const currentMax = Math.max(...allZIndexes, 20);
-      const newZ = currentMax + 1;
-      setMaxZIndex(newZ);
-
-      // Helper to find and update
-      const findAndUpdate = <T extends { id: string; zIndex?: number }>(items: T[]): T[] => 
-        items.map(item => item.id === selectedComponent ? { ...item, zIndex: newZ } : item);
-
-      // Check single objects
-      if (prev.header.id === selectedComponent) return { ...prev, header: { ...prev.header, zIndex: newZ } };
-      if (prev.playerName.id === selectedComponent) return { ...prev, playerName: { ...prev.playerName, zIndex: newZ } };
-      if (prev.chart.id === selectedComponent) return { ...prev, chart: { ...prev.chart, zIndex: newZ } };
-      if (prev.playerImage.id === selectedComponent) return { ...prev, playerImage: { ...prev.playerImage, zIndex: newZ } };
-      if (prev.rating.id === selectedComponent) return { ...prev, rating: { ...prev.rating, zIndex: newZ } };
-
-      // Check arrays
-      if (prev.circles.some(c => c.id === selectedComponent)) return { ...prev, circles: findAndUpdate(prev.circles) };
-      if (prev.boxes.some(b => b.id === selectedComponent)) return { ...prev, boxes: findAndUpdate(prev.boxes) };
-      if (prev.miniStats.some(m => m.id === selectedComponent)) return { ...prev, miniStats: findAndUpdate(prev.miniStats) };
-      if (prev.progressBars.some(p => p.id === selectedComponent)) return { ...prev, progressBars: findAndUpdate(prev.progressBars) };
-      if (prev.dividers.some(d => d.id === selectedComponent)) return { ...prev, dividers: findAndUpdate(prev.dividers) };
-      if (prev.iconBadges.some(i => i.id === selectedComponent)) return { ...prev, iconBadges: findAndUpdate(prev.iconBadges) };
-      if (prev.textLabels.some(t => t.id === selectedComponent)) return { ...prev, textLabels: findAndUpdate(prev.textLabels) };
-
-      return prev;
-    });
-  }, [selectedComponent]);
+    const newZ = maxZIndex + 1;
+    setMaxZIndex(newZ);
+    handleUpdateComponent({ zIndex: newZ });
+    console.log('Brought to front');
+  }, [selectedComponent, maxZIndex]);
 
   const handleSendToBack = useCallback(() => {
     if (!selectedComponent) return;
@@ -557,6 +517,35 @@ export const TemplateCanvas: React.FC = () => {
       };
     }
 
+    if (selectedComponent === 'playerName') {
+      return {
+        id: 'playerName',
+        type: 'playerName',
+        value: `${state.playerName.firstName} ${state.playerName.lastName}`,
+        label: state.playerName.country,
+        zIndex: state.playerName.zIndex,
+      };
+    }
+
+    if (selectedComponent === 'header') {
+      return {
+        id: 'header',
+        type: 'header',
+        value: state.header.title,
+        label: state.header.subtitle,
+        zIndex: state.header.zIndex,
+      };
+    }
+
+    if (selectedComponent === 'playerImage') {
+      return {
+        id: 'playerImage',
+        type: 'image',
+        value: state.playerImage.imageUrl || '',
+        zIndex: state.playerImage.zIndex,
+      };
+    }
+
     return null;
   }, [selectedComponent, state]);
 
@@ -564,6 +553,35 @@ export const TemplateCanvas: React.FC = () => {
     if (!selectedComponent) return;
 
     setState(prev => {
+      // Handle playerName
+      if (selectedComponent === 'playerName') {
+        return {
+          ...prev,
+          playerName: { ...prev.playerName, ...data }
+        };
+      }
+
+      // Handle header
+      if (selectedComponent === 'header') {
+        return {
+          ...prev,
+          header: { 
+            ...prev.header, 
+            title: data.value || prev.header.title,
+            subtitle: data.label || prev.header.subtitle,
+            ...data 
+          }
+        };
+      }
+
+      // Handle playerImage
+      if (selectedComponent === 'playerImage') {
+        return {
+          ...prev,
+          playerImage: { ...prev.playerImage, ...data }
+        };
+      }
+
       const circleIdx = prev.circles.findIndex(c => c.id === selectedComponent);
       if (circleIdx !== -1) {
         const updated = [...prev.circles];
@@ -611,16 +629,12 @@ export const TemplateCanvas: React.FC = () => {
       const textIdx = prev.textLabels.findIndex(t => t.id === selectedComponent);
       if (textIdx !== -1) {
         const updated = [...prev.textLabels];
-        // Map generic 'value' to 'text' property
-        const { value, ...rest } = data;
-        updated[textIdx] = { ...updated[textIdx], ...(value && { text: value }), ...rest };
+        updated[textIdx] = { ...updated[textIdx], text: data.value || updated[textIdx].text, ...data };
         return { ...prev, textLabels: updated };
       }
 
       if (selectedComponent === 'chart1') {
-        // Map generic 'label' to 'title' property
-        const { label, ...rest } = data;
-        return { ...prev, chart: { ...prev.chart, ...(label && { title: label }), ...rest } };
+        return { ...prev, chart: { ...prev.chart, title: data.label || prev.chart.title, ...data } };
       }
 
       if (selectedComponent === 'rating') {
@@ -650,50 +664,40 @@ export const TemplateCanvas: React.FC = () => {
 
   const updatePosition = useCallback((category: keyof TemplateState, id: string, position: Position) => {
     setState(prev => {
-      const categoryValue = prev[category];
-      
-      if (Array.isArray(categoryValue)) {
+      if (Array.isArray(prev[category])) {
         return {
           ...prev,
-          [category]: categoryValue.map(item =>
+          [category]: (prev[category] as any[]).map(item =>
             item.id === id ? { ...item, position } : item
           ),
         };
       }
-      
-      // Handle single object components (header, playerName, etc.)
-      if (categoryValue && typeof categoryValue === 'object' && 'id' in categoryValue && categoryValue.id === id) {
+      if ((prev[category] as any).id === id) {
         return {
           ...prev,
-          [category]: { ...categoryValue, position },
+          [category]: { ...prev[category] as any, position },
         };
       }
-      
       return prev;
     });
   }, []);
 
   const updateSize = useCallback((category: keyof TemplateState, id: string, size: Size) => {
     setState(prev => {
-      const categoryValue = prev[category];
-      
-      if (Array.isArray(categoryValue)) {
+      if (Array.isArray(prev[category])) {
         return {
           ...prev,
-          [category]: categoryValue.map(item =>
+          [category]: (prev[category] as any[]).map(item =>
             item.id === id ? { ...item, size } : item
           ),
         };
       }
-      
-      // Handle single object components
-      if (categoryValue && typeof categoryValue === 'object' && 'id' in categoryValue && categoryValue.id === id) {
+      if ((prev[category] as any).id === id) {
         return {
           ...prev,
-          [category]: { ...categoryValue, size },
+          [category]: { ...prev[category] as any, size },
         };
       }
-      
       return prev;
     });
   }, []);
@@ -816,7 +820,7 @@ export const TemplateCanvas: React.FC = () => {
       setIsProcessing(false);
       setProgress(0);
     }
-  }, []); // Removed 't' as it is unused
+  }, [t]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -842,8 +846,6 @@ export const TemplateCanvas: React.FC = () => {
 
   const handleAddComponent = useCallback((componentId: string) => {
     console.log('Adding component:', componentId);
-    
-    // Calculate next Z-Index based on current state to ensure it's on top
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
     

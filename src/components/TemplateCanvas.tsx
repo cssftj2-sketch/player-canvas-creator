@@ -1,16 +1,3 @@
-
-
-Here is the fixed code. I have addressed the following issues:
-
-1.  **Missing Import:** Added `import { toast } from 'react-hot-toast';` (assuming this is the library used, as `toast` was called but not imported).
-2.  **Dependency Warning:** Removed `t` from the dependency array in `processImage` since it was not used inside that function.
-3.  **Type Safety & Logic in `handleUpdateComponent`:**
-    *   Fixed mapping generic `value` from `ComponentData` to specific properties like `text` (for `TextLabelState`) and `title` (for `ChartState`).
-    *   Added logic to strip invalid properties (like `label` or `value`) when spreading `data` onto state objects that don't support them.
-4.  **Type Safety in `updatePosition`/`updateSize`:** Improved the logic to handle dynamic keys more safely.
-5.  **Z-Index Logic:** Refined `handleBringToFront` to ensure it calculates the new index immediately based on the current state rather than relying on the `useEffect` cycle, preventing potential desyncs.
-
-```tsx
 import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { StatCircle } from './StatCircle';
 import { StatBox } from './StatBox';
@@ -1132,4 +1119,3 @@ export const TemplateCanvas: React.FC = () => {
     </div>
   );
 };
-```

@@ -239,34 +239,48 @@ const initialState: TemplateState = {
 
 // Component configuration - maps ALL possible toolbar button IDs
 const COMPONENT_CONFIGS: Record<string, { type: keyof TemplateState; defaults: any }> = {
-  // Circles
+  // Circles - all possible variants
   'circle-lg': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'lg' } },
   'circle-md': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'emerald', size: 'md' } },
   'circle-sm': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'sm' } },
   'stat-circle': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'md' } },
+  'circle': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'md' } },
+  'circle-stat': { type: 'circles', defaults: { value: '0%', label: 'New Stat', color: 'gold', size: 'md' } },
   
-  // Boxes
+  // Boxes - all possible variants
   'stat-box': { type: 'boxes', defaults: { value: '0', label: 'NEW' } },
   'box-shape': { type: 'boxes', defaults: { value: '0', label: 'BOX' } },
+  'box': { type: 'boxes', defaults: { value: '0', label: 'BOX' } },
+  'square-box': { type: 'boxes', defaults: { value: '0', label: 'BOX' } },
   
-  // Mini Stats
+  // Mini Stats - all possible variants
   'mini-stat': { type: 'miniStats', defaults: { value: '0', label: 'STAT', sublabel: 'label' } },
+  'mini-box': { type: 'miniStats', defaults: { value: '0', label: 'STAT', sublabel: 'label' } },
+  'small-stat': { type: 'miniStats', defaults: { value: '0', label: 'STAT', sublabel: 'label' } },
   
-  // Progress Bars
+  // Progress Bars - all possible variants
   'progress-bar': { type: 'progressBars', defaults: { value: 75, label: 'Progress', color: 'gold', size: { width: 200, height: 40 } } },
+  'progress': { type: 'progressBars', defaults: { value: 75, label: 'Progress', color: 'gold', size: { width: 200, height: 40 } } },
+  'bar': { type: 'progressBars', defaults: { value: 75, label: 'Progress', color: 'gold', size: { width: 200, height: 40 } } },
   
-  // Dividers
+  // Dividers - all possible variants
   'divider-h': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
   'divider-v': { type: 'dividers', defaults: { orientation: 'vertical', color: 'gold', size: { width: 4, height: 100 } } },
   'divider': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
+  'line-h': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
+  'line-v': { type: 'dividers', defaults: { orientation: 'vertical', color: 'gold', size: { width: 4, height: 100 } } },
+  'separator': { type: 'dividers', defaults: { orientation: 'horizontal', color: 'gold', size: { width: 150, height: 4 } } },
   
-  // Text Labels
+  // Text Labels - all possible variants
   'text-label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold' } },
   'text': { type: 'textLabels', defaults: { text: 'Text', fontSize: 20, fontWeight: 'normal', color: 'gold' } },
+  'label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 20, fontWeight: 'normal', color: 'gold' } },
+  'heading': { type: 'textLabels', defaults: { text: 'Heading', fontSize: 32, fontWeight: 'bold', color: 'gold' } },
   
   // Chart - maps to the single chart instance
   'line-chart': { type: 'chart', defaults: {} },
   'chart': { type: 'chart', defaults: {} },
+  'performance-chart': { type: 'chart', defaults: {} },
 };
 
 export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
@@ -571,145 +585,186 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
   const handleUpdateComponent = useCallback((data: Partial<ComponentData>) => {
     if (!selectedComponent) return;
 
+    console.log('Updating component:', selectedComponent, 'with data:', data);
+
     setState(prev => {
       // Handle playerName
       if (selectedComponent === 'playerName') {
-        return {
-          ...prev,
-          playerName: { ...prev.playerName, ...data }
-        };
+        const updated = { ...prev.playerName, ...data };
+        console.log('Updated playerName:', updated);
+        return { ...prev, playerName: updated };
       }
 
       // Handle header
       if (selectedComponent === 'header') {
-        return {
-          ...prev,
-          header: { 
-            ...prev.header, 
-            title: data.value || prev.header.title,
-            subtitle: data.label || prev.header.subtitle,
-            ...data 
-          }
+        const updated = { 
+          ...prev.header, 
+          title: data.value !== undefined ? data.value : prev.header.title,
+          subtitle: data.label !== undefined ? data.label : prev.header.subtitle,
+          ...data 
         };
+        console.log('Updated header:', updated);
+        return { ...prev, header: updated };
       }
 
       // Handle playerImage
       if (selectedComponent === 'playerImage') {
-        return {
-          ...prev,
-          playerImage: { ...prev.playerImage, ...data }
-        };
+        const updated = { ...prev.playerImage, ...data };
+        console.log('Updated playerImage:', updated);
+        return { ...prev, playerImage: updated };
       }
 
+      // Handle circles
       const circleIdx = prev.circles.findIndex(c => c.id === selectedComponent);
       if (circleIdx !== -1) {
         const updated = [...prev.circles];
+        const oldCircle = updated[circleIdx];
         updated[circleIdx] = { 
-          ...updated[circleIdx], 
-          ...data,
-          // Ensure color changes are applied
-          ...(data.color && { color: data.color }),
-          ...(data.customColor && { customColor: data.customColor }),
-          ...(data.textColor && { textColor: data.textColor }),
-          ...(data.numberColor && { numberColor: data.numberColor }),
+          ...oldCircle,
+          value: data.value !== undefined ? data.value : oldCircle.value,
+          label: data.label !== undefined ? data.label : oldCircle.label,
+          color: data.color !== undefined ? data.color : oldCircle.color,
+          customColor: data.customColor !== undefined ? data.customColor : oldCircle.customColor,
+          textColor: data.textColor !== undefined ? data.textColor : oldCircle.textColor,
+          numberColor: data.numberColor !== undefined ? data.numberColor : oldCircle.numberColor,
+          size: data.size !== undefined ? data.size : oldCircle.size,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldCircle.zIndex,
         };
+        console.log('Updated circle:', updated[circleIdx]);
         return { ...prev, circles: updated };
       }
 
+      // Handle boxes
       const boxIdx = prev.boxes.findIndex(b => b.id === selectedComponent);
       if (boxIdx !== -1) {
         const updated = [...prev.boxes];
+        const oldBox = updated[boxIdx];
         updated[boxIdx] = { 
-          ...updated[boxIdx], 
-          ...data,
-          ...(data.customColor && { customColor: data.customColor }),
-          ...(data.textColor && { textColor: data.textColor }),
-          ...(data.numberColor && { numberColor: data.numberColor }),
+          ...oldBox,
+          value: data.value !== undefined ? data.value : oldBox.value,
+          label: data.label !== undefined ? data.label : oldBox.label,
+          customColor: data.customColor !== undefined ? data.customColor : oldBox.customColor,
+          textColor: data.textColor !== undefined ? data.textColor : oldBox.textColor,
+          numberColor: data.numberColor !== undefined ? data.numberColor : oldBox.numberColor,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldBox.zIndex,
         };
+        console.log('Updated box:', updated[boxIdx]);
         return { ...prev, boxes: updated };
       }
 
+      // Handle miniStats
       const miniIdx = prev.miniStats.findIndex(m => m.id === selectedComponent);
       if (miniIdx !== -1) {
         const updated = [...prev.miniStats];
+        const oldMini = updated[miniIdx];
         updated[miniIdx] = { 
-          ...updated[miniIdx], 
-          ...data,
-          ...(data.customColor && { customColor: data.customColor }),
-          ...(data.textColor && { textColor: data.textColor }),
-          ...(data.numberColor && { numberColor: data.numberColor }),
+          ...oldMini,
+          value: data.value !== undefined ? data.value : oldMini.value,
+          label: data.label !== undefined ? data.label : oldMini.label,
+          sublabel: data.sublabel !== undefined ? data.sublabel : oldMini.sublabel,
+          customColor: data.customColor !== undefined ? data.customColor : oldMini.customColor,
+          textColor: data.textColor !== undefined ? data.textColor : oldMini.textColor,
+          numberColor: data.numberColor !== undefined ? data.numberColor : oldMini.numberColor,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldMini.zIndex,
         };
+        console.log('Updated miniStat:', updated[miniIdx]);
         return { ...prev, miniStats: updated };
       }
 
+      // Handle progressBars
       const barIdx = prev.progressBars.findIndex(p => p.id === selectedComponent);
       if (barIdx !== -1) {
         const updated = [...prev.progressBars];
-        const numValue = parseInt(data.value || updated[barIdx].value.toString(), 10);
+        const oldBar = updated[barIdx];
+        const numValue = data.value !== undefined ? parseInt(data.value.toString(), 10) : oldBar.value;
         const validValue = isNaN(numValue) ? 0 : Math.max(0, Math.min(100, numValue));
         updated[barIdx] = { 
-          ...updated[barIdx], 
-          ...data, 
+          ...oldBar,
           value: validValue,
-          ...(data.color && { color: data.color }),
-          ...(data.customColor && { customColor: data.customColor }),
+          label: data.label !== undefined ? data.label : oldBar.label,
+          color: data.color !== undefined ? data.color : oldBar.color,
+          customColor: data.customColor !== undefined ? data.customColor : oldBar.customColor,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldBar.zIndex,
         };
+        console.log('Updated progressBar:', updated[barIdx]);
         return { ...prev, progressBars: updated };
       }
 
+      // Handle dividers
       const dividerIdx = prev.dividers.findIndex(d => d.id === selectedComponent);
       if (dividerIdx !== -1) {
         const updated = [...prev.dividers];
+        const oldDivider = updated[dividerIdx];
         updated[dividerIdx] = { 
-          ...updated[dividerIdx], 
-          ...data,
-          ...(data.color && { color: data.color }),
-          ...(data.customColor && { customColor: data.customColor }),
+          ...oldDivider,
+          color: data.color !== undefined ? data.color : oldDivider.color,
+          customColor: data.customColor !== undefined ? data.customColor : oldDivider.customColor,
+          orientation: data.orientation !== undefined ? data.orientation : oldDivider.orientation,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldDivider.zIndex,
         };
+        console.log('Updated divider:', updated[dividerIdx]);
         return { ...prev, dividers: updated };
       }
 
+      // Handle iconBadges
       const iconIdx = prev.iconBadges.findIndex(i => i.id === selectedComponent);
       if (iconIdx !== -1) {
         const updated = [...prev.iconBadges];
+        const oldIcon = updated[iconIdx];
         updated[iconIdx] = { 
-          ...updated[iconIdx], 
-          ...data,
-          ...(data.color && { color: data.color }),
-          ...(data.customColor && { customColor: data.customColor }),
+          ...oldIcon,
+          color: data.color !== undefined ? data.color : oldIcon.color,
+          customColor: data.customColor !== undefined ? data.customColor : oldIcon.customColor,
+          size: data.size !== undefined ? data.size : oldIcon.size,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldIcon.zIndex,
         };
+        console.log('Updated icon:', updated[iconIdx]);
         return { ...prev, iconBadges: updated };
       }
 
+      // Handle textLabels
       const textIdx = prev.textLabels.findIndex(t => t.id === selectedComponent);
       if (textIdx !== -1) {
         const updated = [...prev.textLabels];
+        const oldText = updated[textIdx];
         updated[textIdx] = { 
-          ...updated[textIdx], 
-          text: data.value || updated[textIdx].text, 
-          ...data,
-          ...(data.color && { color: data.color }),
-          ...(data.customColor && { customColor: data.customColor }),
+          ...oldText,
+          text: data.value !== undefined ? data.value : oldText.text,
+          fontSize: data.fontSize !== undefined ? data.fontSize : oldText.fontSize,
+          fontWeight: data.fontWeight !== undefined ? data.fontWeight : oldText.fontWeight,
+          color: data.color !== undefined ? data.color : oldText.color,
+          customColor: data.customColor !== undefined ? data.customColor : oldText.customColor,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldText.zIndex,
         };
+        console.log('Updated text:', updated[textIdx]);
         return { ...prev, textLabels: updated };
       }
 
+      // Handle chart
       if (selectedComponent === 'chart1') {
-        return { 
-          ...prev, 
-          chart: { 
-            ...prev.chart, 
-            title: data.label || prev.chart.title, 
-            ...data,
-            ...(data.customColor && { customColor: data.customColor }),
-          } 
+        const updated = { 
+          ...prev.chart, 
+          title: data.label !== undefined ? data.label : prev.chart.title,
+          customColor: data.customColor !== undefined ? data.customColor : prev.chart.customColor,
+          zIndex: data.zIndex !== undefined ? data.zIndex : prev.chart.zIndex,
         };
+        console.log('Updated chart:', updated);
+        return { ...prev, chart: updated };
       }
 
+      // Handle rating
       if (selectedComponent === 'rating') {
-        return { ...prev, rating: { ...prev.rating, ...data } };
+        const updated = { 
+          ...prev.rating, 
+          value: data.value !== undefined ? data.value : prev.rating.value,
+          label: data.label !== undefined ? data.label : prev.rating.label,
+          zIndex: data.zIndex !== undefined ? data.zIndex : prev.rating.zIndex,
+        };
+        console.log('Updated rating:', updated);
+        return { ...prev, rating: updated };
       }
 
+      console.log('Component not found:', selectedComponent);
       return prev;
     });
   }, [selectedComponent]);
@@ -1070,7 +1125,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             {/* Stat Circles */}
             {state.circles.map(circle => (
               <StatCircle
-                key={circle.id}
+                key={`${circle.id}-${colorTheme}`}
                 {...circle}
                 onPositionChange={(id, pos) => updatePosition('circles', id, pos)}
                 onValueChange={handleCircleValueChange}
@@ -1082,7 +1137,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             {/* Stat Boxes */}
             {state.boxes.map(box => (
               <StatBox
-                key={box.id}
+                key={`${box.id}-${colorTheme}`}
                 {...box}
                 onPositionChange={(id, pos) => updatePosition('boxes', id, pos)}
                 onValueChange={handleBoxValueChange}
@@ -1093,6 +1148,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 
             {/* Player Name */}
             <PlayerName
+              key={`playerName-${colorTheme}`}
               {...state.playerName}
               onPositionChange={(id, pos) => updatePosition('playerName', id, pos)}
               onValueChange={handlePlayerNameChange}
@@ -1102,6 +1158,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 
             {/* Performance Chart */}
             <PerformanceChart
+              key={`chart-${colorTheme}`}
               {...state.chart}
               onPositionChange={(id, pos) => updatePosition('chart', id, pos)}
               onSelect={handleSelectComponent}
@@ -1111,7 +1168,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             {/* Mini Stats */}
             {state.miniStats.map(stat => (
               <MiniStatBox
-                key={stat.id}
+                key={`${stat.id}-${colorTheme}`}
                 {...stat}
                 onPositionChange={(id, pos) => updatePosition('miniStats', id, pos)}
                 onValueChange={handleMiniStatValueChange}
@@ -1122,6 +1179,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 
             {/* Rating Badge */}
             <RatingBadge
+              key={`rating-${colorTheme}`}
               {...state.rating}
               onPositionChange={(id, pos) => updatePosition('rating', id, pos)}
               onValueChange={handleRatingChange}
@@ -1132,7 +1190,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             {/* Progress Bars */}
             {state.progressBars.map(bar => (
               <ProgressBar
-                key={bar.id}
+                key={`${bar.id}-${colorTheme}`}
                 {...bar}
                 onPositionChange={(id, pos) => updatePosition('progressBars', id, pos)}
                 onSizeChange={(id, size) => updateSize('progressBars', id, size)}
@@ -1145,7 +1203,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             {/* Dividers */}
             {state.dividers.map(divider => (
               <Divider
-                key={divider.id}
+                key={`${divider.id}-${colorTheme}`}
                 {...divider}
                 onPositionChange={(id, pos) => updatePosition('dividers', id, pos)}
                 onSizeChange={(id, size) => updateSize('dividers', id, size)}
@@ -1157,7 +1215,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             {/* Icon Badges */}
             {state.iconBadges.map(icon => (
               <IconBadge
-                key={icon.id}
+                key={`${icon.id}-${colorTheme}`}
                 {...icon}
                 onPositionChange={(id, pos) => updatePosition('iconBadges', id, pos)}
                 onSelect={handleSelectComponent}
@@ -1168,7 +1226,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             {/* Text Labels */}
             {state.textLabels.map(text => (
               <TextLabel
-                key={text.id}
+                key={`${text.id}-${colorTheme}`}
                 {...text}
                 onPositionChange={(id, pos) => updatePosition('textLabels', id, pos)}
                 onValueChange={handleTextLabelChange}

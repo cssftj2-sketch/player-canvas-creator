@@ -102,6 +102,8 @@ interface ChartState extends BaseComponent {
   data: { value: number }[];
   title: string;
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
 }
 
 interface PlayerData {
@@ -281,6 +283,8 @@ const COMPONENT_CONFIGS: Record<string, { type: keyof TemplateState; defaults: a
   'line-chart': { type: 'chart', defaults: {} },
   'chart': { type: 'chart', defaults: {} },
   'performance-chart': { type: 'chart', defaults: {} },
+  'activity-chart': { type: 'chart', defaults: {} },
+  'bar-chart': { type: 'chart', defaults: {} },
 };
 
 export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
@@ -536,6 +540,8 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         type: 'chart',
         label: state.chart.title,
         customColor: state.chart.customColor,
+        textColor: state.chart.textColor,
+        numberColor: state.chart.numberColor,
         zIndex: state.chart.zIndex,
       };
     }
@@ -746,6 +752,8 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
           ...prev.chart, 
           title: data.label !== undefined ? data.label : prev.chart.title,
           customColor: data.customColor !== undefined ? data.customColor : prev.chart.customColor,
+          textColor: data.textColor !== undefined ? data.textColor : prev.chart.textColor,
+          numberColor: data.numberColor !== undefined ? data.numberColor : prev.chart.numberColor,
           zIndex: data.zIndex !== undefined ? data.zIndex : prev.chart.zIndex,
         };
         console.log('Updated chart:', updated);
@@ -771,6 +779,13 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 
   const handleDeleteComponent = useCallback(() => {
     if (!selectedComponent) return;
+
+    // Prevent deletion of unique components
+    const nonDeletableComponents = ['playerName', 'header', 'chart1', 'rating', 'playerImage'];
+    if (nonDeletableComponents.includes(selectedComponent)) {
+      console.log('Cannot delete this component - it is a unique element');
+      return;
+    }
 
     setState(prev => ({
       ...prev,

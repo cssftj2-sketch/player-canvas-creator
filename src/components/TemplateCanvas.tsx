@@ -250,7 +250,7 @@ const COMPONENT_CONFIGS = {
   'text-label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 24, fontWeight: 'bold', color: 'gold' } },
 };
 
-export const TemplateCanvas: React.FC = () => {
+export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
   const { t, isRTL, canvasBackground, colorTheme } = useTheme();
   const [state, setState] = useState<TemplateState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -1120,4 +1120,6 @@ export const TemplateCanvas: React.FC = () => {
       )}
     </div>
   );
-};
+});
+
+TemplateCanvas.displayName = 'TemplateCanvas';

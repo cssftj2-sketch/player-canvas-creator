@@ -1135,13 +1135,3 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 TemplateCanvas.displayName = 'TemplateCanvas';
-        }));
-
-        console.log('Background removed successfully!');
-      } else {
-        const imageUrl = URL.createObjectURL(file);
-        imageUrlRef.current = imageUrl;
-        
-        setState(prev => ({
-          ...prev,
-          playerImage: { ...prev.playerImage, imageUrl },

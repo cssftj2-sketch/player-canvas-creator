@@ -453,6 +453,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         textColor: circle.textColor,
         numberColor: circle.numberColor,
         zIndex: circle.zIndex,
+        canDelete: true,
       };
     }
 
@@ -467,6 +468,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         textColor: box.textColor,
         numberColor: box.numberColor,
         zIndex: box.zIndex,
+        canDelete: true,
       };
     }
 
@@ -482,6 +484,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         textColor: mini.textColor,
         numberColor: mini.numberColor,
         zIndex: mini.zIndex,
+        canDelete: true,
       };
     }
 
@@ -495,6 +498,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         color: bar.color,
         customColor: bar.customColor,
         zIndex: bar.zIndex,
+        canDelete: true,
       };
     }
 
@@ -506,6 +510,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         color: divider.color,
         customColor: divider.customColor,
         zIndex: divider.zIndex,
+        canDelete: true,
       };
     }
 
@@ -518,6 +523,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         size: icon.size,
         customColor: icon.customColor,
         zIndex: icon.zIndex,
+        canDelete: true,
       };
     }
 
@@ -531,6 +537,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         color: text.color,
         customColor: text.customColor,
         zIndex: text.zIndex,
+        canDelete: true,
       };
     }
 
@@ -543,6 +550,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         textColor: state.chart.textColor,
         numberColor: state.chart.numberColor,
         zIndex: state.chart.zIndex,
+        canDelete: false,
       };
     }
 
@@ -553,6 +561,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         value: state.rating.value,
         label: state.rating.label,
         zIndex: state.rating.zIndex,
+        canDelete: false,
       };
     }
 
@@ -563,6 +572,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         value: `${state.playerName.firstName} ${state.playerName.lastName}`,
         label: state.playerName.country,
         zIndex: state.playerName.zIndex,
+        canDelete: false,
       };
     }
 
@@ -573,6 +583,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         value: state.header.title,
         label: state.header.subtitle,
         zIndex: state.header.zIndex,
+        canDelete: false,
       };
     }
 
@@ -582,6 +593,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         type: 'image',
         value: state.playerImage.imageUrl || '',
         zIndex: state.playerImage.zIndex,
+        canDelete: false,
       };
     }
 
@@ -1175,6 +1187,9 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             <PerformanceChart
               key={`chart-${colorTheme}`}
               {...state.chart}
+              customColor={state.chart.customColor}
+              textColor={state.chart.textColor}
+              numberColor={state.chart.numberColor}
               onPositionChange={(id, pos) => updatePosition('chart', id, pos)}
               onSelect={handleSelectComponent}
               isSelected={selectedComponent === state.chart.id}

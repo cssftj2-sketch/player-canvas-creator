@@ -20,7 +20,7 @@ import { DataTable } from './DataTable';
 import AIPlayerSearch from './AIPlayerSearch';
 import { FontSelector } from './FontSelector';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme, fontCombinations } from '@/contexts/ThemeContext';
 import { Table } from 'lucide-react';
 
 // Type definitions
@@ -131,7 +131,7 @@ interface TemplateState {
     position: Position;
     zIndex?: number;
   };
-  chart: ChartState;
+  charts: ChartState[];
   playerImage: {
     id: string;
     imageUrl: string | null;
@@ -153,6 +153,9 @@ interface TemplateState {
     label: string;
     position: Position;
     zIndex?: number;
+    customColor?: string;
+    textColor?: string;
+    numberColor?: string;
   };
   progressBars: ProgressBarState[];
   dividers: DividerState[];
@@ -196,7 +199,7 @@ const initialState: TemplateState = {
     position: { x: 420, y: 320 },
     zIndex: 15
   },
-  chart: {
+  charts: [{
     id: 'chart1',
     data: [
       { value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, 
@@ -206,7 +209,7 @@ const initialState: TemplateState = {
     title: 'MATCH PERFORMANCE',
     position: { x: 480, y: 520 },
     zIndex: 10
-  },
+  }],
   playerImage: {
     id: 'playerImage',
     imageUrl: null,
@@ -279,16 +282,16 @@ const COMPONENT_CONFIGS: Record<string, { type: keyof TemplateState; defaults: a
   'label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 20, fontWeight: 'normal', color: 'gold' } },
   'heading': { type: 'textLabels', defaults: { text: 'Heading', fontSize: 32, fontWeight: 'bold', color: 'gold' } },
   
-  // Chart - maps to the single chart instance
-  'line-chart': { type: 'chart', defaults: {} },
-  'chart': { type: 'chart', defaults: {} },
-  'performance-chart': { type: 'chart', defaults: {} },
-  'activity-chart': { type: 'chart', defaults: {} },
-  'bar-chart': { type: 'chart', defaults: {} },
+  // Chart - now supports multiple instances
+  'line-chart': { type: 'charts', defaults: { data: [{ value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, { value: -2 }, { value: 6 }, { value: 4 }, { value: -5 }, { value: 7 }, { value: 3 }, { value: -1 }, { value: 4 }], title: 'PERFORMANCE' } },
+  'chart': { type: 'charts', defaults: { data: [{ value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, { value: -2 }, { value: 6 }, { value: 4 }, { value: -5 }, { value: 7 }, { value: 3 }, { value: -1 }, { value: 4 }], title: 'PERFORMANCE' } },
+  'performance-chart': { type: 'charts', defaults: { data: [{ value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, { value: -2 }, { value: 6 }, { value: 4 }, { value: -5 }, { value: 7 }, { value: 3 }, { value: -1 }, { value: 4 }], title: 'PERFORMANCE' } },
+  'activity-chart': { type: 'charts', defaults: { data: [{ value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, { value: -2 }, { value: 6 }, { value: 4 }, { value: -5 }, { value: 7 }, { value: 3 }, { value: -1 }, { value: 4 }], title: 'ACTIVITY' } },
+  'bar-chart': { type: 'charts', defaults: { data: [{ value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, { value: -2 }, { value: 6 }, { value: 4 }, { value: -5 }, { value: 7 }, { value: 3 }, { value: -1 }, { value: 4 }], title: 'TREND' } },
 };
 
 export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
-  const { t, isRTL, canvasBackground, colorTheme, setColorTheme } = useTheme();
+  const { t, isRTL, canvasBackground, colorTheme, fontCombination } = useTheme();
   const [state, setState] = useState<TemplateState>(initialState);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -311,7 +314,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       ...state.iconBadges.map(i => i.zIndex || 0),
       ...state.textLabels.map(t => t.zIndex || 0),
       state.playerName.zIndex || 0,
-      state.chart.zIndex || 0,
+      ...state.charts.map(c => c.zIndex || 0),
       state.playerImage.zIndex || 0,
       state.header.zIndex || 0,
       state.rating.zIndex || 0,
@@ -541,16 +544,17 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       };
     }
 
-    if (selectedComponent === 'chart1') {
+    const chart = state.charts.find(c => c.id === selectedComponent);
+    if (chart) {
       return {
-        id: 'chart1',
+        id: chart.id,
         type: 'chart',
-        label: state.chart.title,
-        customColor: state.chart.customColor,
-        textColor: state.chart.textColor,
-        numberColor: state.chart.numberColor,
-        zIndex: state.chart.zIndex,
-        canDelete: false,
+        label: chart.title,
+        customColor: chart.customColor,
+        textColor: chart.textColor,
+        numberColor: chart.numberColor,
+        zIndex: chart.zIndex,
+        canDelete: true,
       };
     }
 
@@ -560,6 +564,9 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         type: 'rating',
         value: state.rating.value,
         label: state.rating.label,
+        customColor: state.rating.customColor,
+        textColor: state.rating.textColor,
+        numberColor: state.rating.numberColor,
         zIndex: state.rating.zIndex,
         canDelete: false,
       };
@@ -590,7 +597,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     if (selectedComponent === 'playerImage') {
       return {
         id: 'playerImage',
-        type: 'image',
+        type: 'playerImage',
         value: state.playerImage.imageUrl || '',
         zIndex: state.playerImage.zIndex,
         canDelete: false,
@@ -627,7 +634,10 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 
       // Handle playerImage
       if (selectedComponent === 'playerImage') {
-        const updated = { ...prev.playerImage, ...data };
+        const updated = { 
+          ...prev.playerImage, 
+          zIndex: data.zIndex !== undefined ? data.zIndex : prev.playerImage.zIndex,
+        };
         console.log('Updated playerImage:', updated);
         return { ...prev, playerImage: updated };
       }
@@ -758,18 +768,21 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         return { ...prev, textLabels: updated };
       }
 
-      // Handle chart
-      if (selectedComponent === 'chart1') {
-        const updated = { 
-          ...prev.chart, 
-          title: data.label !== undefined ? data.label : prev.chart.title,
-          customColor: data.customColor !== undefined ? data.customColor : prev.chart.customColor,
-          textColor: data.textColor !== undefined ? data.textColor : prev.chart.textColor,
-          numberColor: data.numberColor !== undefined ? data.numberColor : prev.chart.numberColor,
-          zIndex: data.zIndex !== undefined ? data.zIndex : prev.chart.zIndex,
+      // Handle charts
+      const chartIdx = prev.charts.findIndex(c => c.id === selectedComponent);
+      if (chartIdx !== -1) {
+        const updated = [...prev.charts];
+        const oldChart = updated[chartIdx];
+        updated[chartIdx] = { 
+          ...oldChart,
+          title: data.label !== undefined ? data.label : oldChart.title,
+          customColor: data.customColor !== undefined ? data.customColor : oldChart.customColor,
+          textColor: data.textColor !== undefined ? data.textColor : oldChart.textColor,
+          numberColor: data.numberColor !== undefined ? data.numberColor : oldChart.numberColor,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldChart.zIndex,
         };
-        console.log('Updated chart:', updated);
-        return { ...prev, chart: updated };
+        console.log('Updated chart:', updated[chartIdx]);
+        return { ...prev, charts: updated };
       }
 
       // Handle rating
@@ -778,6 +791,9 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
           ...prev.rating, 
           value: data.value !== undefined ? data.value : prev.rating.value,
           label: data.label !== undefined ? data.label : prev.rating.label,
+          customColor: data.customColor !== undefined ? data.customColor : prev.rating.customColor,
+          textColor: data.textColor !== undefined ? data.textColor : prev.rating.textColor,
+          numberColor: data.numberColor !== undefined ? data.numberColor : prev.rating.numberColor,
           zIndex: data.zIndex !== undefined ? data.zIndex : prev.rating.zIndex,
         };
         console.log('Updated rating:', updated);
@@ -793,7 +809,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     if (!selectedComponent) return;
 
     // Prevent deletion of unique components
-    const nonDeletableComponents = ['playerName', 'header', 'chart1', 'rating', 'playerImage'];
+    const nonDeletableComponents = ['playerName', 'header', 'rating', 'playerImage'];
     if (nonDeletableComponents.includes(selectedComponent)) {
       console.log('Cannot delete this component - it is a unique element');
       return;
@@ -808,6 +824,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       dividers: prev.dividers.filter(d => d.id !== selectedComponent),
       iconBadges: prev.iconBadges.filter(i => i.id !== selectedComponent),
       textLabels: prev.textLabels.filter(t => t.id !== selectedComponent),
+      charts: prev.charts.filter(c => c.id !== selectedComponent),
     }));
     setSelectedComponent(null);
     console.log('Component deleted');
@@ -1034,11 +1051,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     // Handle configured components
     const config = COMPONENT_CONFIGS[componentId];
     if (config) {
-      // For chart type, it's a single component not an array
-      if (config.type === 'chart') {
-        console.log('Chart already exists - cannot add duplicate');
-        return;
-      }
       
       const newId = `${config.type}-${Date.now()}`;
       setState(prev => ({
@@ -1101,30 +1113,30 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             aria-label="Upload player image"
           />
           
-          {/* Canvas - Theme classes applied directly */}
+          {/* Canvas - Theme and Font applied only here */}
           <div 
             ref={canvasRef}
-            className={`relative overflow-hidden shadow-2xl theme-${colorTheme}`}
-            key={`canvas-${colorTheme}`}
+            className={`relative overflow-hidden theme-${colorTheme}`}
+            key={`canvas-${colorTheme}-${fontCombination}`}
             style={{
               width: `${CANVAS_WIDTH}px`,
               height: `${CANVAS_HEIGHT}px`,
-              ...backgroundStyle
+              ...backgroundStyle,
             }}
             role="application"
             aria-label="Player stats design canvas"
           >
-            {/* Grid overlay */}
-            <div 
-              className="absolute inset-0 opacity-5 pointer-events-none"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, hsl(var(--foreground)) 1px, transparent 1px),
-                  linear-gradient(to bottom, hsl(var(--foreground)) 1px, transparent 1px)
-                `,
-                backgroundSize: '50px 50px',
-              }}
-            />
+            {/* Font style wrapper - applies font CSS vars only to canvas content */}
+            <style>{`
+              [data-canvas-fonts] {
+                --font-display: ${fontCombinations[fontCombination].display};
+                --font-heading: ${fontCombinations[fontCombination].heading};
+                --font-body: ${fontCombinations[fontCombination].body};
+              }
+              [data-canvas-fonts] .font-display { font-family: var(--font-display); }
+              [data-canvas-fonts] .font-heading { font-family: var(--font-heading); }
+            `}</style>
+            <div data-canvas-fonts className="absolute inset-0">
 
             {/* Header */}
             <HeaderBanner
@@ -1183,17 +1195,19 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               isSelected={selectedComponent === state.playerName.id}
             />
 
-            {/* Performance Chart */}
-            <PerformanceChart
-              key={`chart-${colorTheme}`}
-              {...state.chart}
-              customColor={state.chart.customColor}
-              textColor={state.chart.textColor}
-              numberColor={state.chart.numberColor}
-              onPositionChange={(id, pos) => updatePosition('chart', id, pos)}
-              onSelect={handleSelectComponent}
-              isSelected={selectedComponent === state.chart.id}
-            />
+            {/* Performance Charts */}
+            {state.charts.map(chart => (
+              <PerformanceChart
+                key={`${chart.id}-${colorTheme}`}
+                {...chart}
+                customColor={chart.customColor}
+                textColor={chart.textColor}
+                numberColor={chart.numberColor}
+                onPositionChange={(id, pos) => updatePosition('charts', id, pos)}
+                onSelect={handleSelectComponent}
+                isSelected={selectedComponent === chart.id}
+              />
+            ))}
 
             {/* Mini Stats */}
             {state.miniStats.map(stat => (
@@ -1264,6 +1278,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
                 isSelected={selectedComponent === text.id}
               />
             ))}
+            </div>
           </div>
         </div>
 

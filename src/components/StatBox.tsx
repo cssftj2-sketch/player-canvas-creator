@@ -12,6 +12,9 @@ interface StatBoxProps {
   onSelect: (id: string) => void;
   isSelected: boolean;
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 export const StatBox: React.FC<StatBoxProps> = ({
@@ -25,6 +28,9 @@ export const StatBox: React.FC<StatBoxProps> = ({
   onSelect,
   isSelected,
   customColor,
+  textColor,
+  numberColor,
+  zIndex = 10,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -51,10 +57,11 @@ export const StatBox: React.FC<StatBoxProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
+      style={{ zIndex }}
+      className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-lg' : ''}`}
     >
       <div
-        className="w-full h-full bg-card border-2 border-border rounded-lg p-3 flex flex-col items-center justify-center hover:ring-2 ring-gold/30 transition-all"
+        className="w-full h-full bg-neutral-900/80 border-2 border-neutral-700 rounded-lg p-3 flex flex-col items-center justify-center hover:ring-2 ring-amber-500/30 transition-all"
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
@@ -66,33 +73,36 @@ export const StatBox: React.FC<StatBoxProps> = ({
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={handleBlur}
               autoFocus
-              className="w-16 text-center bg-transparent text-3xl font-display text-gold outline-none border-b border-current"
+              className="w-16 text-center bg-transparent text-3xl font-display text-amber-500 outline-none border-b border-current"
             />
             <input
               type="text"
               value={editLabel}
               onChange={(e) => setEditLabel(e.target.value)}
               onBlur={handleBlur}
-              className="w-20 text-center bg-transparent text-xs font-heading uppercase text-emerald outline-none border-b border-current"
+              className="w-20 text-center bg-transparent text-xs font-heading uppercase text-emerald-500 outline-none border-b border-current"
             />
           </div>
         ) : (
           <>
             <span 
-              className="text-3xl font-display text-primary"
-              style={{ color: customColor || undefined }}
+              className="text-3xl font-display"
+              style={{ color: numberColor || customColor || '#D4AF37' }}
             >
               {value}
             </span>
-            <span className="text-xs font-heading uppercase tracking-wider text-secondary">
+            <span 
+              className="text-xs font-heading uppercase tracking-wider"
+              style={{ color: textColor || '#10B981' }}
+            >
               {label}
             </span>
             {subStats && (
-              <div className="flex gap-3 mt-2 pt-2 border-t border-border">
+              <div className="flex gap-3 mt-2 pt-2 border-t border-neutral-700">
                 {subStats.map((stat, i) => (
                   <div key={i} className="text-center">
-                    <span className="text-xs text-foreground/80">{stat.value}</span>
-                    <span className="text-[10px] block text-muted-foreground">{stat.label}</span>
+                    <span className="text-xs text-neutral-300">{stat.value}</span>
+                    <span className="text-[10px] block text-neutral-500">{stat.label}</span>
                   </div>
                 ))}
               </div>

@@ -12,6 +12,9 @@ interface MiniStatBoxProps {
   onSelect: (id: string) => void;
   isSelected: boolean;
   customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
@@ -25,6 +28,9 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
   onSelect,
   isSelected,
   customColor,
+  textColor,
+  numberColor,
+  zIndex = 10,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -51,10 +57,11 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
+      style={{ zIndex }}
+      className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-lg' : ''}`}
     >
       <div
-        className="w-full h-full flex flex-col items-center justify-center hover:ring-2 ring-gold/30 rounded-lg transition-all bg-card/40 backdrop-blur-sm border border-border/50 p-2"
+        className="w-full h-full flex flex-col items-center justify-center hover:ring-2 ring-amber-500/30 rounded-lg transition-all bg-neutral-900/40 backdrop-blur-sm border border-neutral-700/50 p-2"
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
@@ -66,29 +73,32 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={handleBlur}
               autoFocus
-              className="w-16 text-center bg-transparent text-2xl font-display text-gold outline-none border-b border-current"
+              className="w-16 text-center bg-transparent text-2xl font-display text-amber-500 outline-none border-b border-current"
             />
             <input
               type="text"
               value={editLabel}
               onChange={(e) => setEditLabel(e.target.value)}
               onBlur={handleBlur}
-              className="w-20 text-center bg-transparent text-[10px] text-foreground/70 outline-none border-b border-current uppercase"
+              className="w-20 text-center bg-transparent text-[10px] text-neutral-400 outline-none border-b border-current uppercase"
             />
           </div>
         ) : (
           <>
             <span 
-              className="text-2xl font-display text-primary"
-              style={{ color: customColor || undefined }}
+              className="text-2xl font-display"
+              style={{ color: numberColor || customColor || '#D4AF37' }}
             >
               {value}
             </span>
-            <span className="text-[10px] text-foreground/70 uppercase font-heading tracking-wider">
+            <span 
+              className="text-[10px] uppercase font-heading tracking-wider"
+              style={{ color: textColor || 'rgba(255,255,255,0.7)' }}
+            >
               {label}
             </span>
             {sublabel && (
-              <span className="text-[8px] text-muted-foreground uppercase">
+              <span className="text-[8px] text-neutral-500 uppercase">
                 {sublabel}
               </span>
             )}

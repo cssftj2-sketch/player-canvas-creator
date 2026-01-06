@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export type ColorTheme = 'gold-emerald' | 'blue-silver' | 'red-black' | 'purple-gold' | 'green-white' | 'orange-navy' | 'cyan-magenta' | 'lime-slate';
 export type Language = 'en' | 'ar';
@@ -17,7 +17,7 @@ interface FontConfig {
   body: string;
 }
 
-const fontCombinations: Record<FontCombination, FontConfig> = {
+export const fontCombinations: Record<FontCombination, FontConfig> = {
   modern: {
     display: "'Bebas Neue', sans-serif",
     heading: "'Oswald', sans-serif",
@@ -215,15 +215,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return translations[language][key] || key;
   };
 
-  // Apply font combination
-  useEffect(() => {
-    const root = document.documentElement;
-    const fonts = fontCombinations[fontCombination];
-    
-    root.style.setProperty('--font-display', fonts.display);
-    root.style.setProperty('--font-heading', fonts.heading);
-    root.style.setProperty('--font-body', fonts.body);
-  }, [fontCombination]);
+  // NOTE: Fonts are NOT applied globally - they are applied only to the canvas via inline styles
 
   return (
     <ThemeContext.Provider value={{ 

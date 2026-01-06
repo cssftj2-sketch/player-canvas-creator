@@ -10,6 +10,10 @@ interface PerformanceChartProps {
   onPositionChange: (id: string, position: { x: number; y: number }) => void;
   onSelect: (id: string) => void;
   isSelected: boolean;
+  customColor?: string;
+  textColor?: string;
+  numberColor?: string;
+  zIndex?: number;
 }
 
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({
@@ -20,11 +24,17 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   onPositionChange,
   onSelect,
   isSelected,
+  customColor,
+  textColor,
+  numberColor,
+  zIndex = 10,
 }) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect(id);
   };
+
+  const lineColor = customColor || 'hsl(var(--gold))';
 
   return (
     <Rnd
@@ -33,32 +43,39 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
+      style={{ zIndex }}
+      className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-lg' : ''}`}
     >
       <div 
-        className="w-full h-full bg-card/60 backdrop-blur-sm border border-border rounded-lg p-3 hover:ring-2 ring-gold/30 transition-all"
+        className="w-full h-full bg-neutral-900/60 backdrop-blur-sm border border-neutral-700 rounded-lg p-3 hover:ring-2 ring-amber-500/30 transition-all"
         onClick={handleClick}
       >
-        <h4 className="text-xs font-heading uppercase text-foreground/80 mb-2 tracking-wider">
+        <h4 
+          className="text-xs font-heading uppercase mb-2 tracking-wider"
+          style={{ color: textColor || 'rgba(255,255,255,0.8)' }}
+        >
           {title}
         </h4>
         <div className="h-20">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
-              <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.3} />
+              <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" strokeOpacity={0.3} />
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="hsl(var(--gold))"
+                stroke={lineColor}
                 strokeWidth={2}
                 dot={false}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+        <div 
+          className="flex justify-between text-[10px] mt-1"
+          style={{ color: numberColor || 'rgba(255,255,255,0.6)' }}
+        >
           <span>-10</span>
-          <span className="text-foreground/60">ANDAMENTO PARTITE</span>
+          <span style={{ color: textColor || 'rgba(255,255,255,0.5)' }}>MATCH TREND</span>
           <span>+10</span>
         </div>
       </div>

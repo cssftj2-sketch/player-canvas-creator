@@ -11,10 +11,13 @@ export interface ComponentData {
   color?: 'gold' | 'emerald';
   size?: 'lg' | 'md' | 'sm';
   fontSize?: number;
+  fontWeight?: 'normal' | 'bold';
+  orientation?: 'horizontal' | 'vertical';
   customColor?: string;
   textColor?: string;
   numberColor?: string;
   zIndex?: number;
+  canDelete?: boolean;
 }
 
 interface PropertyEditorProps {
@@ -39,8 +42,8 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
   if (!component) return null;
 
   const colorOptions = [
-    { id: 'gold', label: 'Primary', class: 'bg-primary' },
-    { id: 'emerald', label: 'Secondary', class: 'bg-secondary' },
+    { id: 'gold', label: 'Primary', class: 'bg-amber-500' },
+    { id: 'emerald', label: 'Secondary', class: 'bg-emerald-500' },
   ];
 
   const sizeOptions = [
@@ -57,6 +60,7 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
   ];
 
   const showTextColors = ['circle', 'box', 'miniStat', 'rating', 'text', 'chart'].includes(component.type);
+  const canDelete = component.canDelete !== false;
 
   return (
     <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4 space-y-4">
@@ -262,13 +266,15 @@ export const PropertyEditor: React.FC<PropertyEditorProps> = ({
       )}
 
       {/* Delete Button */}
-      <button
-        onClick={onDelete}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-      >
-        <Trash2 className="w-4 h-4" />
-        {t('properties.delete')}
-      </button>
+      {canDelete && (
+        <button
+          onClick={onDelete}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+          {t('properties.delete')}
+        </button>
+      )}
     </div>
   );
 };

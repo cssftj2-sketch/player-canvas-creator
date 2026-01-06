@@ -13,12 +13,9 @@ interface TextLabelProps {
   onSelect: (id: string) => void;
   isSelected: boolean;
   customColor?: string;
+  textColor?: string;
+  zIndex?: number;
 }
-
-const colorClasses = {
-  gold: 'text-primary',
-  emerald: 'text-secondary',
-};
 
 export const TextLabel: React.FC<TextLabelProps> = ({
   id,
@@ -32,6 +29,8 @@ export const TextLabel: React.FC<TextLabelProps> = ({
   onSelect,
   isSelected,
   customColor,
+  textColor,
+  zIndex = 10,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(text);
@@ -57,6 +56,9 @@ export const TextLabel: React.FC<TextLabelProps> = ({
     }
   };
 
+  // Determine text color - priority: textColor > customColor > theme-based
+  const resolvedColor = textColor || customColor || (color === 'gold' ? '#D4AF37' : '#10B981');
+
   return (
     <Rnd
       position={position}
@@ -64,14 +66,15 @@ export const TextLabel: React.FC<TextLabelProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded' : ''}`}
+      style={{ zIndex }}
+      className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded' : ''}`}
     >
       <div
-        className={`font-heading ${colorClasses[color]} whitespace-nowrap px-1`}
+        className="font-heading whitespace-nowrap px-1"
         style={{ 
           fontSize: `${fontSize}px`,
           fontWeight,
-          color: customColor || undefined,
+          color: resolvedColor,
         }}
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}

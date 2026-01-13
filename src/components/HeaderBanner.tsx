@@ -57,7 +57,10 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
-        <div className="bg-secondary py-1 px-4 inline-block skew-x-[-5deg]">
+        <div 
+          className="py-1 px-4 inline-block skew-x-[-5deg]"
+          style={{ backgroundColor: 'var(--theme-secondary)' }}
+        >
           {isEditing ? (
             <input
               type="text"
@@ -65,25 +68,28 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
               onChange={(e) => setEditSubtitle(e.target.value)}
               onBlur={handleBlur}
               autoFocus
-              className="bg-transparent text-xs font-heading uppercase text-secondary-foreground outline-none border-b border-current tracking-wider"
+              className="bg-transparent text-xs font-heading uppercase text-white outline-none border-b border-current tracking-wider"
             />
           ) : (
-            <span className="text-xs font-heading uppercase text-secondary-foreground tracking-wider">
+            <span className="text-xs font-heading uppercase text-white tracking-wider">
               {subtitle}
             </span>
           )}
         </div>
-        <div className="bg-primary py-2 px-4 -mt-1 skew-x-[-5deg]">
+        <div 
+          className="py-2 px-4 -mt-1 skew-x-[-5deg]"
+          style={{ backgroundColor: 'var(--theme-primary)' }}
+        >
           {isEditing ? (
             <input
               type="text"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               onBlur={handleBlur}
-              className="bg-transparent text-xl font-display text-primary-foreground outline-none border-b border-current tracking-wide"
+              className="bg-transparent text-xl font-display text-white outline-none border-b border-current tracking-wide"
             />
           ) : (
-            <span className="text-xl font-display text-primary-foreground tracking-wide">
+            <span className="text-xl font-display text-white tracking-wide">
               {title}
             </span>
           )}

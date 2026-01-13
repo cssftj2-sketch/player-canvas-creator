@@ -87,7 +87,7 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
           <>
             <span 
               className="text-2xl font-display"
-              style={{ color: numberColor || customColor || '#D4AF37' }}
+              style={{ color: numberColor || customColor || 'var(--theme-primary)' }}
             >
               {value}
             </span>

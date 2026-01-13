@@ -14,9 +14,9 @@ interface DividerProps {
   customColor?: string;
 }
 
-const colorClasses = {
-  gold: 'bg-primary',
-  emerald: 'bg-secondary',
+// Theme-aware color getter
+const getThemeColor = (colorType: 'gold' | 'emerald'): string => {
+  return colorType === 'gold' ? 'var(--theme-primary)' : 'var(--theme-secondary)';
 };
 
 export const Divider: React.FC<DividerProps> = ({
@@ -51,9 +51,9 @@ export const Divider: React.FC<DividerProps> = ({
       minHeight={orientation === 'vertical' ? 50 : 2}
     >
       <div
-        className={`w-full h-full rounded-full ${colorClasses[color]}`}
+        className="w-full h-full rounded-full"
         onClick={handleClick}
-        style={{ backgroundColor: customColor || undefined }}
+        style={{ backgroundColor: customColor || getThemeColor(color) }}
       />
     </Rnd>
   );

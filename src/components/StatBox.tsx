@@ -87,13 +87,13 @@ export const StatBox: React.FC<StatBoxProps> = ({
           <>
             <span 
               className="text-3xl font-display"
-              style={{ color: numberColor || customColor || '#D4AF37' }}
+              style={{ color: numberColor || customColor || 'var(--theme-primary)' }}
             >
               {value}
             </span>
             <span 
               className="text-xs font-heading uppercase tracking-wider"
-              style={{ color: textColor || '#10B981' }}
+              style={{ color: textColor || 'var(--theme-secondary)' }}
             >
               {label}
             </span>

@@ -68,19 +68,9 @@ const sizePixels = {
   sm: 40,
 };
 
-const colorClasses = {
-  gold: {
-    bg: 'bg-primary/20',
-    border: 'border-primary',
-    text: 'text-primary',
-    glow: 'shadow-[0_0_20px_hsl(var(--primary)/0.4)]',
-  },
-  emerald: {
-    bg: 'bg-secondary/20',
-    border: 'border-secondary',
-    text: 'text-secondary',
-    glow: 'shadow-[0_0_20px_hsl(var(--secondary)/0.4)]',
-  },
+// Theme-aware color getter
+const getThemeColor = (colorType: 'gold' | 'emerald'): string => {
+  return colorType === 'gold' ? 'var(--theme-primary)' : 'var(--theme-secondary)';
 };
 
 export const IconBadge: React.FC<IconBadgeProps> = ({
@@ -96,6 +86,7 @@ export const IconBadge: React.FC<IconBadgeProps> = ({
   zIndex = 10,
 }) => {
   const IconComponent = iconMap[icon] || Star;
+  const themeColor = customColor || getThemeColor(color);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -109,21 +100,21 @@ export const IconBadge: React.FC<IconBadgeProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+      className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-xl' : ''}`}
       style={{ zIndex }}
     >
       <div
-        className={`${sizeClasses[size].container} flex items-center justify-center rounded-xl ${!customColor ? colorClasses[color].bg : ''} ${!customColor ? colorClasses[color].border : ''} border-2 ${!customColor ? colorClasses[color].glow : ''} transition-all hover:scale-105`}
+        className={`${sizeClasses[size].container} flex items-center justify-center rounded-xl border-2 transition-all hover:scale-105`}
         onClick={handleClick}
         style={{ 
-          backgroundColor: customColor ? `${customColor}33` : undefined,
-          borderColor: customColor || undefined,
-          boxShadow: customColor ? `0 0 20px ${customColor}66` : undefined,
+          backgroundColor: `color-mix(in srgb, ${themeColor} 20%, transparent)`,
+          borderColor: themeColor,
+          boxShadow: `0 0 20px color-mix(in srgb, ${themeColor} 40%, transparent)`,
         }}
       >
         <IconComponent 
-          className={`${sizeClasses[size].icon} ${!customColor ? colorClasses[color].text : ''}`}
-          style={{ color: customColor || undefined }}
+          className={sizeClasses[size].icon}
+          style={{ color: themeColor }}
         />
       </div>
     </Rnd>

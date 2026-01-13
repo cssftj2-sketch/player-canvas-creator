@@ -34,7 +34,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
     onSelect(id);
   };
 
-  const lineColor = customColor || 'hsl(var(--gold))';
+  const lineColor = customColor || 'var(--theme-primary)';
 
   return (
     <Rnd

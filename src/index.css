@@ -7,176 +7,126 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Lora:wght@400;600&family=Anton&family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500;700&family=Cormorant+Garamond:wght@400;600;700&family=Raleway:wght@400;600;700&family=Nunito:wght@400;600;700&family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600&family=Teko:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&family=Poppins:wght@400;600;700&family=DM+Sans:wght@400;600;700&family=Righteous&family=Archivo+Black&family=Rubik:wght@400;500;600&family=Cinzel:wght@400;700&family=Marcellus&family=Questrial&family=Black+Ops+One&family=Russo+One&family=Exo+2:wght@400;600;700&display=swap');
 
 @layer base {
-  :root {
-    --background: 0 0% 8%;
-    --foreground: 45 10% 95%;
+:root {
+  --background: 0 0% 7%;
+  --foreground: 0 0% 95%;
+  --card: 0 0% 9%;
+  --card-foreground: 0 0% 95%;
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 43 74% 49%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 160 84% 39%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 64%;
+  --accent: 43 74% 49%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 43 74% 49%;
+  --radius: 0.5rem;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-heading: 'Oswald', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
 
-    --card: 0 0% 12%;
-    --card-foreground: 45 10% 95%;
+/* Theme color maps - ONLY applied to canvas */
+.theme-gold-emerald {
+  --primary: 43 74% 49%;
+  --secondary: 160 84% 39%;
+  --primary-hex: #D4AF37;
+  --secondary-hex: #059669;
+}
 
-    --popover: 0 0% 10%;
-    --popover-foreground: 45 10% 95%;
+.theme-blue-silver {
+  --primary: 217 91% 60%;
+  --secondary: 215 16% 62%;
+  --primary-hex: #3B82F6;
+  --secondary-hex: #94A3B8;
+}
 
-    --primary: 43 74% 52%;
-    --primary-foreground: 0 0% 5%;
+.theme-red-black {
+  --primary: 0 72% 51%;
+  --secondary: 220 9% 24%;
+  --primary-hex: #DC2626;
+  --secondary-hex: #1F2937;
+}
 
-    --secondary: 160 84% 39%;
-    --secondary-foreground: 0 0% 100%;
+.theme-purple-gold {
+  --primary: 263 70% 58%;
+  --secondary: 38 92% 50%;
+  --primary-hex: #7C3AED;
+  --secondary-hex: #F59E0B;
+}
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 60%;
+.theme-green-white {
+  --primary: 160 84% 39%;
+  --secondary: 210 40% 98%;
+  --primary-hex: #10B981;
+  --secondary-hex: #F8FAFC;
+}
 
-    --accent: 43 74% 52%;
-    --accent-foreground: 0 0% 5%;
+.theme-orange-navy {
+  --primary: 24 95% 53%;
+  --secondary: 210 54% 24%;
+  --primary-hex: #F97316;
+  --secondary-hex: #1E3A5F;
+}
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+.theme-cyan-magenta {
+  --primary: 187 94% 43%;
+  --secondary: 330 81% 60%;
+  --primary-hex: #06B6D4;
+  --secondary-hex: #EC4899;
+}
 
-    --border: 0 0% 20%;
-    --input: 0 0% 18%;
-    --ring: 43 74% 52%;
+.theme-lime-slate {
+  --primary: 83 78% 44%;
+  --secondary: 215 16% 37%;
+  --primary-hex: #84CC16;
+  --secondary-hex: #475569;
+}
 
-    --radius: 0.5rem;
+.theme-teal-orange {
+  --primary: 173 80% 40%;
+  --secondary: 33 100% 50%;
+  --primary-hex: #14B8A6;
+  --secondary-hex: #FF8C00;
+}
 
-    /* Theme colors */
-    --gold: 43 74% 52%;
-    --gold-glow: 43 74% 62%;
-    --emerald: 160 84% 39%;
-    --emerald-glow: 160 84% 49%;
-    
-    /* Default fonts (Modern) */
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-heading: 'Oswald', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    --font-arabic: 'Cairo', 'Tajawal', sans-serif;
+.theme-rose-slate {
+  --primary: 350 89% 60%;
+  --secondary: 215 25% 27%;
+  --primary-hex: #FB7185;
+  --secondary-hex: #334155;
+}
 
-    --shadow-primary: 0 0 30px hsl(var(--primary) / 0.3);
-    --shadow-secondary: 0 0 30px hsl(var(--secondary) / 0.3);
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary) / 0.7));
-    --gradient-dark: linear-gradient(180deg, hsl(0 0% 12%), hsl(0 0% 6%));
+.theme-amber-indigo {
+  --primary: 45 93% 47%;
+  --secondary: 239 84% 67%;
+  --primary-hex: #F59E0B;
+  --secondary-hex: #6366F1;
+}
 
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 45 10% 95%;
-    --sidebar-primary: 43 74% 52%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 45 10% 95%;
-    --sidebar-border: 0 0% 18%;
-    --sidebar-ring: 43 74% 52%;
-  }
+.theme-sky-rose {
+  --primary: 199 89% 48%;
+  --secondary: 347 77% 50%;
+  --primary-hex: #0EA5E9;
+  --secondary-hex: #E11D48;
+}
 
-  /* Gold & Emerald Theme (Default) */
-  .theme-gold-emerald {
-    --primary: 43 74% 52%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 160 84% 39%;
-    --secondary-foreground: 0 0% 100%;
-    --gold: 43 74% 52%;
-    --gold-glow: 43 74% 62%;
-    --emerald: 160 84% 39%;
-    --emerald-glow: 160 84% 49%;
-  }
-
-  /* Blue & Silver Theme */
-  .theme-blue-silver {
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 215 20% 65%;
-    --secondary-foreground: 0 0% 10%;
-    --gold: 217 91% 60%;
-    --gold-glow: 217 91% 70%;
-    --emerald: 215 20% 65%;
-    --emerald-glow: 215 20% 75%;
-    --accent: 217 91% 60%;
-    --ring: 217 91% 60%;
-  }
-
-  /* Red & Black Theme */
-  .theme-red-black {
-    --primary: 0 72% 51%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 95%;
-    --gold: 0 72% 51%;
-    --gold-glow: 0 72% 61%;
-    --emerald: 0 0% 35%;
-    --emerald-glow: 0 0% 45%;
-    --accent: 0 72% 51%;
-    --ring: 0 72% 51%;
-  }
-
-  /* Purple & Gold Theme */
-  .theme-purple-gold {
-    --primary: 263 70% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 38 92% 50%;
-    --secondary-foreground: 0 0% 5%;
-    --gold: 263 70% 50%;
-    --gold-glow: 263 70% 60%;
-    --emerald: 38 92% 50%;
-    --emerald-glow: 38 92% 60%;
-    --accent: 263 70% 50%;
-    --ring: 263 70% 50%;
-  }
-
-  /* Green & White Theme */
-  .theme-green-white {
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 0 0% 10%;
-    --gold: 160 84% 39%;
-    --gold-glow: 160 84% 49%;
-    --emerald: 210 20% 80%;
-    --emerald-glow: 210 20% 90%;
-    --accent: 160 84% 39%;
-    --ring: 160 84% 39%;
-  }
-
-  /* Orange & Navy Theme */
-  .theme-orange-navy {
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 213 50% 25%;
-    --secondary-foreground: 0 0% 100%;
-    --gold: 25 95% 53%;
-    --gold-glow: 25 95% 63%;
-    --emerald: 213 50% 35%;
-    --emerald-glow: 213 50% 45%;
-    --accent: 25 95% 53%;
-    --ring: 25 95% 53%;
-  }
-
-  /* Cyan & Magenta Theme */
-  .theme-cyan-magenta {
-    --primary: 188 94% 43%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 330 81% 60%;
-    --secondary-foreground: 0 0% 100%;
-    --gold: 188 94% 43%;
-    --gold-glow: 188 94% 53%;
-    --emerald: 330 81% 60%;
-    --emerald-glow: 330 81% 70%;
-    --accent: 188 94% 43%;
-    --ring: 188 94% 43%;
-  }
-
-  /* Lime & Slate Theme */
-  .theme-lime-slate {
-    --primary: 84 81% 44%;
-    --primary-foreground: 0 0% 5%;
-    --secondary: 215 16% 47%;
-    --secondary-foreground: 0 0% 100%;
-    --gold: 84 81% 44%;
-    --gold-glow: 84 81% 54%;
-    --emerald: 215 16% 57%;
-    --emerald-glow: 215 16% 67%;
-    --accent: 84 81% 44%;
-    --ring: 84 81% 44%;
-  }
-
-  .dark {
+.dark {
     --background: 0 0% 8%;
     --foreground: 45 10% 95%;
     --card: 0 0% 12%;

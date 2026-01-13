@@ -10,6 +10,7 @@ interface HeaderBannerProps {
   onValueChange: (id: string, title: string, subtitle: string) => void;
   onSelect: (id: string) => void;
   isSelected: boolean;
+  zIndex?: number;
 }
 
 export const HeaderBanner: React.FC<HeaderBannerProps> = ({
@@ -21,6 +22,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
   onValueChange,
   onSelect,
   isSelected,
+  zIndex = 20,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
@@ -47,6 +49,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
+      style={{ zIndex }}
       className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded' : ''}`}
     >
       <div

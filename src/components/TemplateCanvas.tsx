@@ -299,6 +299,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
   const [removeBackgroundEnabled, setRemoveBackgroundEnabled] = useState(true);
   const [showDataTable, setShowDataTable] = useState(false);
   const [maxZIndex, setMaxZIndex] = useState(20);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageUrlRef = useRef<string | null>(null);
@@ -359,14 +360,98 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     if (!selectedComponent) return;
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
-    handleUpdateComponent({ zIndex: newZ });
-    console.log('Brought to front');
+    // Need to call setState directly to update zIndex
+    setState(prev => {
+      const updateZIndex = (items: any[], id: string) => 
+        items.map(item => item.id === id ? { ...item, zIndex: newZ } : item);
+      
+      if (prev.circles.find(c => c.id === selectedComponent)) {
+        return { ...prev, circles: updateZIndex(prev.circles, selectedComponent) };
+      }
+      if (prev.boxes.find(b => b.id === selectedComponent)) {
+        return { ...prev, boxes: updateZIndex(prev.boxes, selectedComponent) };
+      }
+      if (prev.miniStats.find(m => m.id === selectedComponent)) {
+        return { ...prev, miniStats: updateZIndex(prev.miniStats, selectedComponent) };
+      }
+      if (prev.charts.find(c => c.id === selectedComponent)) {
+        return { ...prev, charts: updateZIndex(prev.charts, selectedComponent) };
+      }
+      if (prev.progressBars.find(p => p.id === selectedComponent)) {
+        return { ...prev, progressBars: updateZIndex(prev.progressBars, selectedComponent) };
+      }
+      if (prev.dividers.find(d => d.id === selectedComponent)) {
+        return { ...prev, dividers: updateZIndex(prev.dividers, selectedComponent) };
+      }
+      if (prev.iconBadges.find(i => i.id === selectedComponent)) {
+        return { ...prev, iconBadges: updateZIndex(prev.iconBadges, selectedComponent) };
+      }
+      if (prev.textLabels.find(t => t.id === selectedComponent)) {
+        return { ...prev, textLabels: updateZIndex(prev.textLabels, selectedComponent) };
+      }
+      if (selectedComponent === 'playerName') {
+        return { ...prev, playerName: { ...prev.playerName, zIndex: newZ } };
+      }
+      if (selectedComponent === 'playerImage') {
+        return { ...prev, playerImage: { ...prev.playerImage, zIndex: newZ } };
+      }
+      if (selectedComponent === 'header') {
+        return { ...prev, header: { ...prev.header, zIndex: newZ } };
+      }
+      if (selectedComponent === 'rating') {
+        return { ...prev, rating: { ...prev.rating, zIndex: newZ } };
+      }
+      return prev;
+    });
+    console.log('Brought to front with zIndex:', newZ);
   }, [selectedComponent, maxZIndex]);
 
   const handleSendToBack = useCallback(() => {
     if (!selectedComponent) return;
-    handleUpdateComponent({ zIndex: 1 });
-    console.log('Sent to back');
+    const newZ = 1;
+    setState(prev => {
+      const updateZIndex = (items: any[], id: string) => 
+        items.map(item => item.id === id ? { ...item, zIndex: newZ } : item);
+      
+      if (prev.circles.find(c => c.id === selectedComponent)) {
+        return { ...prev, circles: updateZIndex(prev.circles, selectedComponent) };
+      }
+      if (prev.boxes.find(b => b.id === selectedComponent)) {
+        return { ...prev, boxes: updateZIndex(prev.boxes, selectedComponent) };
+      }
+      if (prev.miniStats.find(m => m.id === selectedComponent)) {
+        return { ...prev, miniStats: updateZIndex(prev.miniStats, selectedComponent) };
+      }
+      if (prev.charts.find(c => c.id === selectedComponent)) {
+        return { ...prev, charts: updateZIndex(prev.charts, selectedComponent) };
+      }
+      if (prev.progressBars.find(p => p.id === selectedComponent)) {
+        return { ...prev, progressBars: updateZIndex(prev.progressBars, selectedComponent) };
+      }
+      if (prev.dividers.find(d => d.id === selectedComponent)) {
+        return { ...prev, dividers: updateZIndex(prev.dividers, selectedComponent) };
+      }
+      if (prev.iconBadges.find(i => i.id === selectedComponent)) {
+        return { ...prev, iconBadges: updateZIndex(prev.iconBadges, selectedComponent) };
+      }
+      if (prev.textLabels.find(t => t.id === selectedComponent)) {
+        return { ...prev, textLabels: updateZIndex(prev.textLabels, selectedComponent) };
+      }
+      if (selectedComponent === 'playerName') {
+        return { ...prev, playerName: { ...prev.playerName, zIndex: newZ } };
+      }
+      if (selectedComponent === 'playerImage') {
+        return { ...prev, playerImage: { ...prev.playerImage, zIndex: newZ } };
+      }
+      if (selectedComponent === 'header') {
+        return { ...prev, header: { ...prev.header, zIndex: newZ } };
+      }
+      if (selectedComponent === 'rating') {
+        return { ...prev, rating: { ...prev.rating, zIndex: newZ } };
+      }
+      return prev;
+    });
+    console.log('Sent to back with zIndex:', newZ);
   }, [selectedComponent]);
 
   const handlePlayerSelect = useCallback((playerData: PlayerData) => {
@@ -1102,41 +1187,69 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
           <ExportControls canvasRef={canvasRef} />
         </aside>
 
-        {/* Main Canvas */}
-        <div className="flex-1 flex items-center justify-center p-8" onClick={handleCanvasClick}>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept={ALLOWED_FILE_TYPES.join(',')}
-            className="hidden"
-            aria-label="Upload player image"
-          />
+        {/* Main Canvas Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Zoom Controls */}
+          <div className="flex items-center justify-center gap-2 py-2 bg-neutral-900/50 border-b border-neutral-800">
+            <button
+              onClick={() => setZoomLevel(Math.max(0.5, zoomLevel - 0.1))}
+              className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-sm"
+            >
+              −
+            </button>
+            <span className="text-neutral-300 text-sm min-w-[60px] text-center">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <button
+              onClick={() => setZoomLevel(Math.min(2, zoomLevel + 0.1))}
+              className="px-3 py-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded text-sm"
+            >
+              +
+            </button>
+            <button
+              onClick={() => setZoomLevel(1)}
+              className="px-3 py-1 bg-neutral-700 hover:bg-neutral-600 text-neutral-300 rounded text-sm ml-2"
+            >
+              Reset
+            </button>
+          </div>
           
-          {/* Canvas - Theme and Font applied only here */}
-          <div 
-            ref={canvasRef}
-            className={`relative overflow-hidden theme-${colorTheme}`}
-            key={`canvas-${colorTheme}-${fontCombination}`}
-            style={{
-              width: `${CANVAS_WIDTH}px`,
-              height: `${CANVAS_HEIGHT}px`,
-              ...backgroundStyle,
-            }}
-            role="application"
-            aria-label="Player stats design canvas"
-          >
-            {/* Font style wrapper - applies font CSS vars only to canvas content */}
-            <style>{`
-              [data-canvas-fonts] {
-                --font-display: ${fontCombinations[fontCombination].display};
-                --font-heading: ${fontCombinations[fontCombination].heading};
-                --font-body: ${fontCombinations[fontCombination].body};
-              }
-              [data-canvas-fonts] .font-display { font-family: var(--font-display); }
-              [data-canvas-fonts] .font-heading { font-family: var(--font-heading); }
-            `}</style>
-            <div data-canvas-fonts className="absolute inset-0">
+          <div className="flex-1 flex items-center justify-center p-8 overflow-auto" onClick={handleCanvasClick}>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept={ALLOWED_FILE_TYPES.join(',')}
+              className="hidden"
+              aria-label="Upload player image"
+            />
+            
+            {/* Canvas - Theme and Font applied only here */}
+            <div 
+              ref={canvasRef}
+              className={`relative overflow-hidden theme-${colorTheme}`}
+              key={`canvas-${colorTheme}-${fontCombination}`}
+              style={{
+                width: `${CANVAS_WIDTH}px`,
+                height: `${CANVAS_HEIGHT}px`,
+                transform: `scale(${zoomLevel})`,
+                transformOrigin: 'center center',
+                ...backgroundStyle,
+              }}
+              role="application"
+              aria-label="Player stats design canvas"
+            >
+              {/* Font style wrapper - applies font CSS vars only to canvas content */}
+              <style>{`
+                [data-canvas-fonts] {
+                  --font-display: ${fontCombinations[fontCombination].display};
+                  --font-heading: ${fontCombinations[fontCombination].heading};
+                  --font-body: ${fontCombinations[fontCombination].body};
+                }
+                [data-canvas-fonts] .font-display { font-family: var(--font-display); }
+                [data-canvas-fonts] .font-heading { font-family: var(--font-heading); }
+              `}</style>
+              <div data-canvas-fonts className="absolute inset-0">
 
             {/* Header */}
             <HeaderBanner
@@ -1279,10 +1392,9 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
             </div>
+            </div>
           </div>
         </div>
-
-        {/* Right Sidebar - Property Editor */}
         {selectedComponent && (
           <aside className={`w-72 p-4 bg-neutral-900/80 border-neutral-800 ${isRTL ? 'border-r' : 'border-l'}`}>
             <PropertyEditor

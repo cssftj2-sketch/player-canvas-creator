@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type ColorTheme = 'gold-emerald' | 'blue-silver' | 'red-black' | 'purple-gold' | 'green-white' | 'orange-navy' | 'cyan-magenta' | 'lime-slate';
+export type ColorTheme = 'gold-emerald' | 'blue-silver' | 'red-black' | 'purple-gold' | 'green-white' | 'orange-navy' | 'cyan-magenta' | 'lime-slate' | 'teal-orange' | 'rose-slate' | 'amber-indigo' | 'sky-rose';
 export type Language = 'en' | 'ar';
 export type FontCombination = 'modern' | 'classic' | 'bold' | 'elegant' | 'tech' | 'sport' | 'minimal' | 'retro' | 'luxury' | 'dynamic';
 

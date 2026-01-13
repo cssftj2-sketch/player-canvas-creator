@@ -11,6 +11,14 @@ const presetBackgrounds: { name: string; bg: CanvasBackground }[] = [
   { name: 'Gold Sunset', bg: { type: 'radial', color1: '#2a2010', color2: '#0a0905', angle: 0 } },
   { name: 'Pure Black', bg: { type: 'solid', color1: '#000000', color2: '#000000', angle: 0 } },
   { name: 'Charcoal', bg: { type: 'solid', color1: '#1f1f1f', color2: '#1f1f1f', angle: 0 } },
+  { name: 'Ocean Deep', bg: { type: 'gradient', color1: '#0d3b66', color2: '#001d3d', angle: 180 } },
+  { name: 'Emerald Night', bg: { type: 'gradient', color1: '#064e3b', color2: '#022c22', angle: 135 } },
+  { name: 'Warm Amber', bg: { type: 'radial', color1: '#451a03', color2: '#1c0a01', angle: 0 } },
+  { name: 'Steel Grey', bg: { type: 'gradient', color1: '#374151', color2: '#111827', angle: 180 } },
+  { name: 'Wine Red', bg: { type: 'gradient', color1: '#7f1d1d', color2: '#450a0a', angle: 135 } },
+  { name: 'Electric Blue', bg: { type: 'radial', color1: '#1e40af', color2: '#0a1628', angle: 0 } },
+  { name: 'Rose Quartz', bg: { type: 'gradient', color1: '#4c1d4e', color2: '#1a0a1a', angle: 135 } },
+  { name: 'Cyber Punk', bg: { type: 'gradient', color1: '#1a1a2e', color2: '#16213e', angle: 45 } },
 ];
 
 export const BackgroundEditor: React.FC = () => {

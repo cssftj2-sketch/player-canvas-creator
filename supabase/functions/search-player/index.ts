@@ -36,6 +36,16 @@ interface PlayerStats {
   xA: number;
   passAccuracy: number;
   rating: number;
+  yellowCards: number;
+  redCards: number;
+  cleanSheets: number;
+  aerialDuelsWon: number;
+  crossesCompleted: number;
+  longBallsCompleted: number;
+  groundDuelsWon: number;
+  blockedShots: number;
+  clearances: number;
+  recoveries: number;
 }
 
 interface AfconMatchStats {
@@ -66,6 +76,12 @@ interface PlayerResponse {
   club: string;
   nationality: string;
   age: number;
+  height: string;
+  weight: string;
+  preferredFoot: string;
+  shirtNumber: number;
+  marketValue: string;
+  contractUntil: string;
   imageQuery: string;
   stats: PlayerStats;
   afconMatch?: AfconMatchStats | null;
@@ -111,6 +127,12 @@ JSON FORMAT:
   "club": "",
   "nationality": "",
   "age": 0,
+  "height": "180cm",
+  "weight": "75kg",
+  "preferredFoot": "Right",
+  "shirtNumber": 10,
+  "marketValue": "€10M",
+  "contractUntil": "2026",
   "imageQuery": "",
   "stats": {
     "appearances": 0,
@@ -127,7 +149,17 @@ JSON FORMAT:
     "xG": 0,
     "xA": 0,
     "passAccuracy": 0,
-    "rating": 7.0
+    "rating": 7.0,
+    "yellowCards": 0,
+    "redCards": 0,
+    "cleanSheets": 0,
+    "aerialDuelsWon": 0,
+    "crossesCompleted": 0,
+    "longBallsCompleted": 0,
+    "groundDuelsWon": 0,
+    "blockedShots": 0,
+    "clearances": 0,
+    "recoveries": 0
   },
   "afconMatch": {
     "competition": "AFCON",
@@ -269,6 +301,12 @@ serve(async (req: Request) => {
       club: safeString(parsed.club),
       nationality: safeString(parsed.nationality),
       age: clamp(safeNumber(parsed.age), 15, 45),
+      height: safeString(parsed.height, "180cm"),
+      weight: safeString(parsed.weight, "75kg"),
+      preferredFoot: safeString(parsed.preferredFoot, "Right"),
+      shirtNumber: safeNumber(parsed.shirtNumber, 10),
+      marketValue: safeString(parsed.marketValue, "€10M"),
+      contractUntil: safeString(parsed.contractUntil, "2026"),
       imageQuery: safeString(parsed.imageQuery),
       stats: {
         appearances: safeNumber(parsed.stats?.appearances),
@@ -286,6 +324,16 @@ serve(async (req: Request) => {
         xA: safeNumber(parsed.stats?.xA),
         passAccuracy: clamp(safeNumber(parsed.stats?.passAccuracy, 80), 50, 100),
         rating: clamp(safeNumber(parsed.stats?.rating, 7), 0, 10),
+        yellowCards: safeNumber(parsed.stats?.yellowCards),
+        redCards: safeNumber(parsed.stats?.redCards),
+        cleanSheets: safeNumber(parsed.stats?.cleanSheets),
+        aerialDuelsWon: safeNumber(parsed.stats?.aerialDuelsWon),
+        crossesCompleted: safeNumber(parsed.stats?.crossesCompleted),
+        longBallsCompleted: safeNumber(parsed.stats?.longBallsCompleted),
+        groundDuelsWon: safeNumber(parsed.stats?.groundDuelsWon),
+        blockedShots: safeNumber(parsed.stats?.blockedShots),
+        clearances: safeNumber(parsed.stats?.clearances),
+        recoveries: safeNumber(parsed.stats?.recoveries),
       },
     };
 

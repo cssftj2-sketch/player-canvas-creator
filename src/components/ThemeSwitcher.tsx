@@ -11,6 +11,10 @@ const themes: { id: ColorTheme; name: string; colors: string[] }[] = [
   { id: 'orange-navy', name: 'Orange & Navy', colors: ['#F97316', '#1E3A5F'] },
   { id: 'cyan-magenta', name: 'Cyan & Magenta', colors: ['#06B6D4', '#EC4899'] },
   { id: 'lime-slate', name: 'Lime & Slate', colors: ['#84CC16', '#475569'] },
+  { id: 'teal-orange', name: 'Teal & Orange', colors: ['#14B8A6', '#FF8C00'] },
+  { id: 'rose-slate', name: 'Rose & Slate', colors: ['#FB7185', '#334155'] },
+  { id: 'amber-indigo', name: 'Amber & Indigo', colors: ['#F59E0B', '#6366F1'] },
+  { id: 'sky-rose', name: 'Sky & Rose', colors: ['#0EA5E9', '#E11D48'] },
 ];
 
 const languages: { id: Language; name: string; native: string }[] = [

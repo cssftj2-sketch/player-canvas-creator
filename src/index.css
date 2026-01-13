@@ -39,91 +39,9 @@
   --font-display: 'Bebas Neue', sans-serif;
   --font-heading: 'Oswald', sans-serif;
   --font-body: 'Inter', sans-serif;
-}
-
-/* Theme color maps - ONLY applied to canvas */
-.theme-gold-emerald {
-  --primary: 43 74% 49%;
-  --secondary: 160 84% 39%;
-  --primary-hex: #D4AF37;
-  --secondary-hex: #059669;
-}
-
-.theme-blue-silver {
-  --primary: 217 91% 60%;
-  --secondary: 215 16% 62%;
-  --primary-hex: #3B82F6;
-  --secondary-hex: #94A3B8;
-}
-
-.theme-red-black {
-  --primary: 0 72% 51%;
-  --secondary: 220 9% 24%;
-  --primary-hex: #DC2626;
-  --secondary-hex: #1F2937;
-}
-
-.theme-purple-gold {
-  --primary: 263 70% 58%;
-  --secondary: 38 92% 50%;
-  --primary-hex: #7C3AED;
-  --secondary-hex: #F59E0B;
-}
-
-.theme-green-white {
-  --primary: 160 84% 39%;
-  --secondary: 210 40% 98%;
-  --primary-hex: #10B981;
-  --secondary-hex: #F8FAFC;
-}
-
-.theme-orange-navy {
-  --primary: 24 95% 53%;
-  --secondary: 210 54% 24%;
-  --primary-hex: #F97316;
-  --secondary-hex: #1E3A5F;
-}
-
-.theme-cyan-magenta {
-  --primary: 187 94% 43%;
-  --secondary: 330 81% 60%;
-  --primary-hex: #06B6D4;
-  --secondary-hex: #EC4899;
-}
-
-.theme-lime-slate {
-  --primary: 83 78% 44%;
-  --secondary: 215 16% 37%;
-  --primary-hex: #84CC16;
-  --secondary-hex: #475569;
-}
-
-.theme-teal-orange {
-  --primary: 173 80% 40%;
-  --secondary: 33 100% 50%;
-  --primary-hex: #14B8A6;
-  --secondary-hex: #FF8C00;
-}
-
-.theme-rose-slate {
-  --primary: 350 89% 60%;
-  --secondary: 215 25% 27%;
-  --primary-hex: #FB7185;
-  --secondary-hex: #334155;
-}
-
-.theme-amber-indigo {
-  --primary: 45 93% 47%;
-  --secondary: 239 84% 67%;
-  --primary-hex: #F59E0B;
-  --secondary-hex: #6366F1;
-}
-
-.theme-sky-rose {
-  --primary: 199 89% 48%;
-  --secondary: 347 77% 50%;
-  --primary-hex: #0EA5E9;
-  --secondary-hex: #E11D48;
+  /* Default theme colors for canvas */
+  --theme-primary: #D4AF37;
+  --theme-secondary: #059669;
 }
 
 .dark {
@@ -138,6 +56,67 @@
     --border: 0 0% 20%;
     --input: 0 0% 18%;
   }
+}
+
+/* Theme color maps for canvas - OUTSIDE of @layer base for higher specificity */
+.theme-gold-emerald {
+  --theme-primary: #D4AF37;
+  --theme-secondary: #059669;
+}
+
+.theme-blue-silver {
+  --theme-primary: #3B82F6;
+  --theme-secondary: #94A3B8;
+}
+
+.theme-red-black {
+  --theme-primary: #DC2626;
+  --theme-secondary: #374151;
+}
+
+.theme-purple-gold {
+  --theme-primary: #7C3AED;
+  --theme-secondary: #F59E0B;
+}
+
+.theme-green-white {
+  --theme-primary: #10B981;
+  --theme-secondary: #F8FAFC;
+}
+
+.theme-orange-navy {
+  --theme-primary: #F97316;
+  --theme-secondary: #1E3A5F;
+}
+
+.theme-cyan-magenta {
+  --theme-primary: #06B6D4;
+  --theme-secondary: #EC4899;
+}
+
+.theme-lime-slate {
+  --theme-primary: #84CC16;
+  --theme-secondary: #475569;
+}
+
+.theme-teal-orange {
+  --theme-primary: #14B8A6;
+  --theme-secondary: #FF8C00;
+}
+
+.theme-rose-slate {
+  --theme-primary: #FB7185;
+  --theme-secondary: #334155;
+}
+
+.theme-amber-indigo {
+  --theme-primary: #F59E0B;
+  --theme-secondary: #6366F1;
+}
+
+.theme-sky-rose {
+  --theme-primary: #0EA5E9;
+  --theme-secondary: #E11D48;
 }
 
 @layer base {

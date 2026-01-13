@@ -12,6 +12,7 @@ interface PlayerNameProps {
   onValueChange: (id: string, data: { firstName: string; lastName: string; number: string; country: string }) => void;
   onSelect: (id: string) => void;
   isSelected: boolean;
+  zIndex?: number;
 }
 
 export const PlayerName: React.FC<PlayerNameProps> = ({
@@ -25,6 +26,7 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
   onValueChange,
   onSelect,
   isSelected,
+  zIndex = 15,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({ firstName, lastName, number, country });
@@ -50,10 +52,11 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''}`}
+      style={{ zIndex }}
+      className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-lg' : ''}`}
     >
       <div
-        className="flex flex-col items-start hover:ring-2 ring-gold/30 rounded-lg p-2 transition-all"
+        className="flex flex-col items-start hover:ring-2 ring-amber-500/30 rounded-lg p-2 transition-all"
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
@@ -65,14 +68,15 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
               onChange={(e) => setEditData({ ...editData, firstName: e.target.value })}
               onBlur={handleBlur}
               autoFocus
-              className="bg-transparent text-4xl font-display text-foreground outline-none border-b border-foreground/30"
+              className="bg-transparent text-4xl font-display text-white outline-none border-b border-white/30"
               placeholder="First Name"
             />
             <input
               type="text"
               value={editData.lastName}
               onChange={(e) => setEditData({ ...editData, lastName: e.target.value })}
-              className="bg-transparent text-6xl font-display text-gold outline-none border-b border-gold/30"
+              className="bg-transparent text-6xl font-display outline-none border-b"
+              style={{ color: 'var(--theme-primary)', borderColor: 'var(--theme-primary)' }}
               placeholder="Last Name"
             />
             <div className="flex items-center gap-2">
@@ -80,7 +84,8 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
                 type="text"
                 value={editData.number}
                 onChange={(e) => setEditData({ ...editData, number: e.target.value })}
-                className="w-12 bg-transparent text-2xl font-display text-gold outline-none border-b border-gold/30"
+                className="w-12 bg-transparent text-2xl font-display outline-none border-b"
+                style={{ color: 'var(--theme-primary)', borderColor: 'var(--theme-primary)' }}
                 placeholder="#"
               />
               <input
@@ -88,24 +93,34 @@ export const PlayerName: React.FC<PlayerNameProps> = ({
                 value={editData.country}
                 onChange={(e) => setEditData({ ...editData, country: e.target.value })}
                 onBlur={handleBlur}
-                className="bg-transparent text-3xl font-display text-emerald outline-none border-b border-emerald/30"
+                className="bg-transparent text-3xl font-display outline-none border-b"
+                style={{ color: 'var(--theme-secondary)', borderColor: 'var(--theme-secondary)' }}
                 placeholder="Country"
               />
             </div>
           </div>
         ) : (
           <>
-            <span className="text-4xl font-display text-foreground tracking-wide">
+            <span className="text-4xl font-display text-white tracking-wide">
               {firstName}
             </span>
-            <span className="text-6xl font-display text-primary tracking-wider leading-none">
+            <span 
+              className="text-6xl font-display tracking-wider leading-none"
+              style={{ color: 'var(--theme-primary)' }}
+            >
               {lastName}
             </span>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-2xl font-display text-primary border-2 border-primary px-2 rounded">
+              <span 
+                className="text-2xl font-display border-2 px-2 rounded"
+                style={{ color: 'var(--theme-primary)', borderColor: 'var(--theme-primary)' }}
+              >
                 {number}
               </span>
-              <span className="text-3xl font-display text-secondary tracking-widest">
+              <span 
+                className="text-3xl font-display tracking-widest"
+                style={{ color: 'var(--theme-secondary)' }}
+              >
                 {country}
               </span>
             </div>

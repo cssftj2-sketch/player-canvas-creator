@@ -24,21 +24,6 @@ const sizeClasses = {
   sm: { container: 'w-24 h-24', text: 'text-3xl', label: 'text-[10px]' },
 };
 
-const colorClasses = {
-  gold: {
-    border: 'border-primary',
-    text: 'text-primary',
-    glow: 'shadow-gold',
-    ring: 'ring-primary/30',
-  },
-  emerald: {
-    border: 'border-secondary',
-    text: 'text-secondary',
-    glow: 'shadow-emerald',
-    ring: 'ring-secondary/30',
-  },
-};
-
 const sizePixels = {
   lg: 160,
   md: 128,
@@ -65,6 +50,9 @@ export const StatCircle: React.FC<StatCircleProps> = ({
   const [editValue, setEditValue] = useState(value);
   const [editLabel, setEditLabel] = useState(label);
 
+  // Get theme color based on color prop
+  const themeColor = color === 'gold' ? 'var(--theme-primary)' : 'var(--theme-secondary)';
+
   const handleDoubleClick = () => {
     setIsEditing(true);
   };
@@ -83,6 +71,8 @@ export const StatCircle: React.FC<StatCircleProps> = ({
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
+  const activeColor = customColor || themeColor;
+
   return (
     <Rnd
       position={position}
@@ -90,11 +80,13 @@ export const StatCircle: React.FC<StatCircleProps> = ({
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
-      className={`cursor-move ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-full' : ''}`}
+      style={{ zIndex }}
+      className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-full' : ''}`}
     >
       <div
         onClick={handleClick}
-        className={`relative ${sizeClasses[size].container} flex flex-col items-center justify-center rounded-full border-4 ${colorClasses[color].border} ${colorClasses[color].glow} bg-card/80 backdrop-blur-sm transition-all hover:ring-4 ${colorClasses[color].ring}`}
+        className={`relative ${sizeClasses[size].container} flex flex-col items-center justify-center rounded-full border-4 bg-neutral-900/80 backdrop-blur-sm transition-all hover:ring-4 hover:ring-white/20`}
+        style={{ borderColor: activeColor }}
         onDoubleClick={handleDoubleClick}
       >
         {/* Progress ring */}
@@ -106,7 +98,7 @@ export const StatCircle: React.FC<StatCircleProps> = ({
             fill="none"
             stroke="currentColor"
             strokeWidth="3"
-            className="text-muted/30"
+            className="text-neutral-700/30"
           />
           <circle
             cx="50"
@@ -115,9 +107,8 @@ export const StatCircle: React.FC<StatCircleProps> = ({
             fill="none"
             strokeWidth="3"
             strokeLinecap="round"
-            className={!customColor ? colorClasses[color].text : ''}
             style={{ 
-              stroke: customColor || undefined,
+              stroke: activeColor,
               transition: 'stroke-dashoffset 0.5s ease' 
             }}
             strokeDasharray={circumference}
@@ -134,27 +125,27 @@ export const StatCircle: React.FC<StatCircleProps> = ({
               onBlur={handleBlur}
               autoFocus
               className={`w-16 text-center bg-transparent ${sizeClasses[size].text} font-display outline-none border-b border-current`}
-              style={{ color: customColor || undefined }}
+              style={{ color: activeColor }}
             />
             <input
               type="text"
               value={editLabel}
               onChange={(e) => setEditLabel(e.target.value)}
               onBlur={handleBlur}
-              className={`w-20 text-center bg-transparent ${sizeClasses[size].label} text-foreground/80 outline-none border-b border-current`}
+              className={`w-20 text-center bg-transparent ${sizeClasses[size].label} text-neutral-300 outline-none border-b border-current`}
             />
           </div>
         ) : (
           <>
             <span 
-              className={`font-display ${sizeClasses[size].text} ${!customColor && !numberColor ? colorClasses[color].text : ''} z-10`}
-              style={{ color: numberColor || customColor || undefined }}
+              className={`font-display ${sizeClasses[size].text} z-10`}
+              style={{ color: numberColor || activeColor }}
             >
               {value}
             </span>
             <span 
               className={`${sizeClasses[size].label} text-center leading-tight z-10 px-2`}
-              style={{ color: textColor || 'hsl(var(--foreground) / 0.8)' }}
+              style={{ color: textColor || 'rgba(255,255,255,0.8)' }}
             >
               {label}
             </span>

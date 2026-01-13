@@ -48,7 +48,7 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
     onSelect(id);
   };
 
-  const bgColor = customColor || '#D4AF37';
+  const bgColor = customColor || 'var(--theme-primary)';
 
   return (
     <Rnd

@@ -57,7 +57,7 @@ export const TextLabel: React.FC<TextLabelProps> = ({
   };
 
   // Determine text color - priority: textColor > customColor > theme-based
-  const resolvedColor = textColor || customColor || (color === 'gold' ? '#D4AF37' : '#10B981');
+  const resolvedColor = textColor || customColor || (color === 'gold' ? 'var(--theme-primary)' : 'var(--theme-secondary)');
 
   return (
     <Rnd

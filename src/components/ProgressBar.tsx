@@ -16,9 +16,9 @@ interface ProgressBarProps {
   customColor?: string;
 }
 
-const colorClasses = {
-  gold: 'bg-primary',
-  emerald: 'bg-secondary',
+// Theme-aware color getter
+const getThemeColor = (colorType: 'gold' | 'emerald'): string => {
+  return colorType === 'gold' ? 'var(--theme-primary)' : 'var(--theme-secondary)';
 };
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -99,12 +99,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             </>
           )}
         </div>
-        <div className="w-full h-2 bg-muted/50 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-neutral-700/50 rounded-full overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${colorClasses[color]}`}
+            className="h-full rounded-full transition-all duration-500"
             style={{ 
               width: `${Math.min(100, Math.max(0, value))}%`,
-              backgroundColor: customColor || undefined,
+              backgroundColor: customColor || getThemeColor(color),
             }}
           />
         </div>

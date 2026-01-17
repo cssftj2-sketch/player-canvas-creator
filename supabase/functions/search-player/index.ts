@@ -292,11 +292,14 @@ For African players, include AFCON match data if they participated:
 // IMAGE SEARCH FUNCTION
 // =====================================================
 
+// =====================================================
+// IMPROVED IMAGE SEARCH FUNCTION
+// =====================================================
+
 async function searchPlayerImage(playerName: string, club: string): Promise<string | null> {
   try {
-    console.log("Searching for real player image:", playerName);
+    console.log("Searching for player image:", playerName, club);
     
-    // Use AI to find the real player image URL from trusted sources
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -308,53 +311,181 @@ async function searchPlayerImage(playerName: string, club: string): Promise<stri
         messages: [
           {
             role: "system",
-            content: `You are a football image URL finder. Return ONLY a direct image URL to a real photo of the requested football player. 
-            
-RULES:
-- Return ONLY the URL, nothing else
-- Use Wikipedia/Wikimedia Commons URLs when possible (format: https://upload.wikimedia.org/...)
-- Alternatively use official club/league photos
-- The URL must end in .jpg, .jpeg, .png, or .webp
-- Must be a REAL photo of the actual player
-- If you cannot find a verified URL, return "null"
-- NO explanations, NO markdown, just the URL or "null"`
+            content: `You are an expert at finding official football player images. Your task is to return a direct image URL.
+
+CRITICAL RULES:
+1. Return ONLY a URL, nothing else
+2. The URL must be a direct link to an image file
+3. Prefer sources in this order:
+   - Wikipedia/Wikimedia Commons (upload.wikimedia.org)
+   - Transfermarkt (tmssl.akamaized.net or img.a.transfermarkt.technology)
+   - Official club websites
+   - FIFA/UEFA official sources
+4. URL must end with image extension (.jpg, .jpeg, .png, .webp) OR be from a trusted domain
+5. If uncertain, return the text: NONE
+6. Do NOT return broken links, placeholder images, or generic football images
+7. The image must be of the SPECIFIC player requested
+
+Response format: Just the URL or the word NONE`
           },
           {
             role: "user",
-            content: `Find a real photo URL for football player: ${playerName}${club ? ` who plays for ${club}` : ''}`
+            content: `Find official image URL for: ${playerName}${club ? ` (${club})` : ''}`
           }
         ],
+        temperature: 0.3,
+        max_tokens: 200,
       }),
     });
 
     if (!response.ok) {
-      console.error("Image search failed:", response.status);
+      console.error("Image search API error:", response.status, await response.text());
       return null;
     }
 
     const data = await response.json();
-    const urlResponse = data.choices?.[0]?.message?.content?.trim();
+    const content = data.choices?.[0]?.message?.content?.trim();
     
-    if (urlResponse && urlResponse !== "null" && urlResponse.startsWith("http")) {
-      // Validate it looks like an image URL
-      const isImageUrl = /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(urlResponse) || 
-                         urlResponse.includes("upload.wikimedia.org") ||
-                         urlResponse.includes("tmssl.akamaized.net") ||
-                         urlResponse.includes("img.a.transfermarkt");
-      
-      if (isImageUrl) {
-        console.log("Found real player image:", urlResponse.substring(0, 80));
-        return urlResponse;
-      }
+    if (!content || content === "NONE" || content.toLowerCase() === "null") {
+      console.log("No image found for:", playerName);
+      return null;
     }
+
+    // Extract URL if it's wrapped in text
+    let imageUrl = content;
+    const urlMatch = content.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/);
+    if (urlMatch) {
+      imageUrl = urlMatch[0];
+    }
+
+    // Validate URL format
+    if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
+      console.log("Invalid URL format:", imageUrl);
+      return null;
+    }
+
+    // Check if it's from a trusted domain or has image extension
+    const isTrustedDomain = 
+      imageUrl.includes("upload.wikimedia.org") ||
+      imageUrl.includes("tmssl.akamaized.net") ||
+      imageUrl.includes("img.a.transfermarkt") ||
+      imageUrl.includes("transfermarkt.technology") ||
+      imageUrl.includes("pbs.twimg.com") ||
+      imageUrl.includes("cloudinary.com") ||
+      imageUrl.includes("fifa.com") ||
+      imageUrl.includes("uefa.com");
     
-    console.log("No valid image URL found for:", playerName);
-    return null;
+    const hasImageExtension = /\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i.test(imageUrl);
+    
+    if (!isTrustedDomain && !hasImageExtension) {
+      console.log("URL not from trusted source and no image extension:", imageUrl);
+      return null;
+    }
+
+    // Optional: Verify the image is accessible (with timeout)
+    try {
+      const verifyController = new AbortController();
+      const verifyTimeout = setTimeout(() => verifyController.abort(), 3000);
+      
+      const verifyResponse = await fetch(imageUrl, {
+        method: "HEAD",
+        signal: verifyController.signal,
+      });
+      
+      clearTimeout(verifyTimeout);
+      
+      if (!verifyResponse.ok) {
+        console.log("Image URL not accessible:", verifyResponse.status);
+        return null;
+      }
+      
+      const contentType = verifyResponse.headers.get("content-type");
+      if (contentType && !contentType.startsWith("image/")) {
+        console.log("URL does not point to an image:", contentType);
+        return null;
+      }
+    } catch (verifyError) {
+      // If verification fails, still return the URL (might be CORS issue)
+      console.log("Could not verify image (may still work):", verifyError);
+    }
+
+    console.log("✓ Found valid image URL:", imageUrl.substring(0, 80) + "...");
+    return imageUrl;
+    
   } catch (error) {
     console.error("Image search error:", error);
     return null;
   }
 }
+
+// =====================================================
+// ALTERNATIVE: Multi-Source Image Search with Fallbacks
+// =====================================================
+
+async function searchPlayerImageWithFallback(
+  playerName: string, 
+  club: string,
+  nationality?: string
+): Promise<string | null> {
+  const searches = [
+    // Primary search
+    () => searchPlayerImage(playerName, club),
+    // Fallback: try with just player name
+    () => searchPlayerImage(playerName, ""),
+    // Fallback: try with nationality if available
+    nationality ? () => searchPlayerImage(`${playerName} ${nationality}`, club) : null,
+  ].filter(Boolean);
+
+  for (const searchFn of searches) {
+    try {
+      const result = await searchFn!();
+      if (result) {
+        return result;
+      }
+    } catch (error) {
+      console.log("Fallback search failed:", error);
+      continue;
+    }
+  }
+
+  return null;
+}
+
+// =====================================================
+// UPDATED MAIN HANDLER INTEGRATION
+// =====================================================
+
+// In the main serve function, replace the image search section with:
+
+/*
+    // -------------------------------
+    // IMAGE SEARCH with timeout
+    // -------------------------------
+    let playerImageUrl: string | null = null;
+    if (includeImage) {
+      try {
+        // Set a reasonable timeout for image search
+        const imageSearchPromise = searchPlayerImageWithFallback(
+          parsed.name || query, 
+          parsed.club || "",
+          parsed.nationality
+        );
+        
+        const timeoutPromise = new Promise<null>((resolve) => 
+          setTimeout(() => resolve(null), 8000) // 8 second timeout
+        );
+        
+        playerImageUrl = await Promise.race([imageSearchPromise, timeoutPromise]);
+        
+        if (!playerImageUrl) {
+          console.log("Image search timed out or failed for:", parsed.name);
+        }
+      } catch (error) {
+        console.error("Image search error:", error);
+        // Continue without image rather than failing the whole request
+      }
+    }
+*/
 
 // =====================================================
 // MAIN HANDLER

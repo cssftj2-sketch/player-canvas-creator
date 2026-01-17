@@ -106,18 +106,8 @@ interface ChartState extends BaseComponent {
   numberColor?: string;
 }
 
-interface PlayerData {
-  name: string;
-  nationality: string;
-  stats: {
-    passAccuracy: number;
-    tacklesWon: number;
-    goals: number;
-    appearances: number;
-    assists: number;
-    rating: number;
-  };
-}
+// Import PlayerData from AIPlayerSearch
+import type { PlayerData } from './AIPlayerSearch';
 
 interface TemplateState {
   circles: CircleState[];
@@ -459,42 +449,99 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       const nameParts = playerData.name?.split(' ') || [];
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
+      const stats = playerData.currentSeasonStats;
 
       setState(prev => ({
         ...prev,
+        // Update player name with number and country
         playerName: {
           ...prev.playerName,
           firstName,
           lastName,
+          number: playerData.shirtNumber?.toString() || prev.playerName.number,
           country: playerData.nationality || '',
         },
+        // Update player image if available
+        playerImage: playerData.imageUrl ? {
+          ...prev.playerImage,
+          imageUrl: playerData.imageUrl,
+        } : prev.playerImage,
+        // Update circles with key stats
         circles: prev.circles.map((circle, idx) => {
-          if (idx === 0 && playerData.stats?.passAccuracy !== undefined) {
-            return { ...circle, value: `${playerData.stats.passAccuracy}%`, label: 'Pass Accuracy' };
+          if (idx === 0) {
+            return { ...circle, value: `${stats?.passAccuracy ?? 0}%`, label: 'Pass Accuracy' };
           }
-          if (idx === 1 && playerData.stats?.tacklesWon !== undefined) {
-            return { ...circle, value: `${playerData.stats.tacklesWon}`, label: 'Tackles Won' };
+          if (idx === 1) {
+            return { ...circle, value: `${stats?.tacklesWon ?? 0}`, label: 'Tackles Won' };
+          }
+          if (idx === 2) {
+            return { ...circle, value: `${stats?.dribblesCompleted ?? 0}`, label: 'Dribbles' };
           }
           return circle;
         }),
-        boxes: prev.boxes.map(box => ({
-          ...box,
-          value: (playerData.stats?.goals ?? 0).toString(),
-          label: 'GOALS',
-        })),
+        // Update stat boxes
+        boxes: prev.boxes.map((box, idx) => {
+          if (idx === 0) {
+            return {
+              ...box,
+              value: (stats?.goals ?? 0).toString(),
+              label: 'GOALS',
+              subStats: [
+                { label: playerData.club || 'Club', value: `${stats?.goals ?? 0}|${stats?.assists ?? 0}` },
+                { label: playerData.nationality || 'National', value: `${playerData.careerStats?.internationalGoals ?? 0}|0` },
+              ],
+            };
+          }
+          return box;
+        }),
+        // Update mini stats with comprehensive data
         miniStats: prev.miniStats.map((stat, idx) => {
-          if (idx === 0) return { ...stat, value: (playerData.stats?.appearances ?? 0).toString(), label: 'APPS' };
-          if (idx === 1) return { ...stat, value: (playerData.stats?.assists ?? 0).toString(), label: 'ASSISTS' };
-          if (idx === 2) return { ...stat, value: (playerData.stats?.goals ?? 0).toString(), label: 'GOALS' };
+          if (idx === 0) return { ...stat, value: (stats?.minutesPlayed ?? 0).toString(), label: 'MIN', sublabel: 'played' };
+          if (idx === 1) return { ...stat, value: (stats?.shotsTotal ?? 0).toString(), label: 'SHOTS', sublabel: 'total' };
+          if (idx === 2) return { ...stat, value: (stats?.keyPasses ?? 0).toString(), label: 'KEY', sublabel: 'passes' };
           return stat;
         }),
+        // Update rating
         rating: {
           ...prev.rating,
-          value: (playerData.stats?.rating ?? 0).toString(),
-        }
+          value: (stats?.rating ?? 7.0).toFixed(1),
+          label: 'RATING',
+        },
+        // Update header with player info
+        header: {
+          ...prev.header,
+          title: playerData.club?.toUpperCase() || prev.header.title,
+          subtitle: `${playerData.detailedPosition || playerData.position} • ${playerData.nationality}`,
+        },
+        // Update chart with performance data
+        charts: prev.charts.map((chart, idx) => {
+          if (idx === 0) {
+            // Generate performance data based on stats
+            const performanceData = [
+              { value: stats?.goals ?? 0 },
+              { value: stats?.assists ?? 0 },
+              { value: Math.round((stats?.passAccuracy ?? 80) / 10) },
+              { value: stats?.keyPasses ?? 0 },
+              { value: stats?.dribblesCompleted ?? 0 },
+              { value: stats?.tacklesWon ?? 0 },
+              { value: stats?.interceptions ?? 0 },
+              { value: Math.round((stats?.xG ?? 0) * 10) },
+              { value: Math.round((stats?.xA ?? 0) * 10) },
+              { value: stats?.shotsOnTarget ?? 0 },
+              { value: stats?.duelsWon ?? 0 },
+              { value: Math.round((stats?.rating ?? 7) * 10 - 70) },
+            ];
+            return {
+              ...chart,
+              data: performanceData,
+              title: 'SEASON PERFORMANCE',
+            };
+          }
+          return chart;
+        }),
       }));
       
-      console.log('Player data loaded successfully');
+      console.log('Enhanced player data loaded successfully:', playerData.name);
     } catch (error) {
       console.error('Error loading player data:', error);
     }

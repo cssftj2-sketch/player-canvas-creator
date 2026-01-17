@@ -292,11 +292,11 @@ For African players, include AFCON match data if they participated:
 // IMAGE SEARCH FUNCTION
 // =====================================================
 
-async function searchPlayerImage(playerName: string): Promise<string | null> {
+async function searchPlayerImage(playerName: string, club: string): Promise<string | null> {
   try {
-    console.log("Searching for player image:", playerName);
+    console.log("Searching for real player image:", playerName);
     
-    // Use the AI gateway to generate/find a player image
+    // Use AI to find the real player image URL from trusted sources
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -304,30 +304,51 @@ async function searchPlayerImage(playerName: string): Promise<string | null> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
+            role: "system",
+            content: `You are a football image URL finder. Return ONLY a direct image URL to a real photo of the requested football player. 
+            
+RULES:
+- Return ONLY the URL, nothing else
+- Use Wikipedia/Wikimedia Commons URLs when possible (format: https://upload.wikimedia.org/...)
+- Alternatively use official club/league photos
+- The URL must end in .jpg, .jpeg, .png, or .webp
+- Must be a REAL photo of the actual player
+- If you cannot find a verified URL, return "null"
+- NO explanations, NO markdown, just the URL or "null"`
+          },
+          {
             role: "user",
-            content: `Generate a professional portrait photo of a football player similar to ${playerName}. The image should show a male football player in a dynamic pose wearing a football kit, with stadium background. High quality, professional sports photography style.`
+            content: `Find a real photo URL for football player: ${playerName}${club ? ` who plays for ${club}` : ''}`
           }
         ],
-        modalities: ["image", "text"]
       }),
     });
 
     if (!response.ok) {
-      console.error("Image generation failed:", response.status);
+      console.error("Image search failed:", response.status);
       return null;
     }
 
     const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const urlResponse = data.choices?.[0]?.message?.content?.trim();
     
-    if (imageUrl) {
-      console.log("Generated player image successfully");
-      return imageUrl;
+    if (urlResponse && urlResponse !== "null" && urlResponse.startsWith("http")) {
+      // Validate it looks like an image URL
+      const isImageUrl = /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(urlResponse) || 
+                         urlResponse.includes("upload.wikimedia.org") ||
+                         urlResponse.includes("tmssl.akamaized.net") ||
+                         urlResponse.includes("img.a.transfermarkt");
+      
+      if (isImageUrl) {
+        console.log("Found real player image:", urlResponse.substring(0, 80));
+        return urlResponse;
+      }
     }
     
+    console.log("No valid image URL found for:", playerName);
     return null;
   } catch (error) {
     console.error("Image search error:", error);
@@ -447,7 +468,7 @@ serve(async (req: Request) => {
     // -------------------------------
     let playerImageUrl: string | null = null;
     if (includeImage) {
-      playerImageUrl = await searchPlayerImage(parsed.name || query);
+      playerImageUrl = await searchPlayerImage(parsed.name || query, parsed.club || "");
     }
 
     // -------------------------------

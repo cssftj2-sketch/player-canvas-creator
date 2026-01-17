@@ -1,6 +1,6 @@
 // =====================================================
-// AI PLAYER SEARCH — PRODUCTION EDGE FUNCTION
-// Using Lovable AI Gateway
+// AI PLAYER SEARCH — ENHANCED EDGE FUNCTION
+// Using Lovable AI Gateway with Image Generation
 // =====================================================
 
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
@@ -20,21 +20,55 @@ if (!LOVABLE_API_KEY) {
 // TYPES
 // =====================================================
 
+interface SeasonStats {
+  season: string;
+  competition: string;
+  appearances: number;
+  goals: number;
+  assists: number;
+  minutesPlayed: number;
+  rating: number;
+}
+
+interface CareerStats {
+  totalAppearances: number;
+  totalGoals: number;
+  totalAssists: number;
+  trophiesWon: number;
+  internationalCaps: number;
+  internationalGoals: number;
+}
+
+interface PhysicalAttributes {
+  height: string;
+  weight: string;
+  preferredFoot: string;
+  pace: number;
+  strength: number;
+  stamina: number;
+}
+
 interface PlayerStats {
   appearances: number;
   minutesPlayed: number;
   goals: number;
   assists: number;
   shotsOnTarget: number;
+  shotsTotal: number;
   keyPasses: number;
   dribblesCompleted: number;
+  dribblesAttempted: number;
   tacklesWon: number;
   interceptions: number;
   duelsWon: number;
+  duelsTotal: number;
   foulsWon: number;
+  foulsConceded: number;
   xG: number;
   xA: number;
   passAccuracy: number;
+  passesCompleted: number;
+  passesAttempted: number;
   rating: number;
   yellowCards: number;
   redCards: number;
@@ -46,11 +80,15 @@ interface PlayerStats {
   blockedShots: number;
   clearances: number;
   recoveries: number;
+  goalsPerGame: number;
+  assistsPerGame: number;
+  minutesPerGoal: number;
 }
 
 interface AfconMatchStats {
   competition: "AFCON";
   match: string;
+  result: string;
   minutesPlayed: number;
   goals: number;
   assists: number;
@@ -72,19 +110,30 @@ interface AfconMatchStats {
 
 interface PlayerResponse {
   name: string;
+  fullName: string;
   position: string;
+  detailedPosition: string;
   club: string;
+  clubCountry: string;
   nationality: string;
+  secondNationality: string | null;
+  dateOfBirth: string;
   age: number;
-  height: string;
-  weight: string;
-  preferredFoot: string;
+  birthplace: string;
   shirtNumber: number;
   marketValue: string;
   contractUntil: string;
+  agent: string;
   imageQuery: string;
-  stats: PlayerStats;
+  imageUrl: string | null;
+  physical: PhysicalAttributes;
+  currentSeasonStats: PlayerStats;
+  recentSeasons: SeasonStats[];
+  careerStats: CareerStats;
   afconMatch?: AfconMatchStats | null;
+  strengths: string[];
+  weaknesses: string[];
+  playingStyle: string;
 }
 
 // =====================================================
@@ -104,51 +153,74 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function safeArray<T>(value: unknown, fallback: T[] = []): T[] {
+  return Array.isArray(value) ? value : fallback;
+}
+
 // =====================================================
 // PROMPT
 // =====================================================
 
 const systemPrompt = `
-You are a professional football analytics engine.
+You are a professional football analytics engine with comprehensive knowledge of players worldwide.
 
 CRITICAL RULES:
 - RETURN ONLY VALID JSON
 - NO MARKDOWN (Do not include \`\`\`json blocks)
 - NO COMMENTS
 - NO EXPLANATIONS
-- DATA MUST BE REALISTIC
+- DATA MUST BE REALISTIC AND ACCURATE
 - NEVER HALLUCINATE IMPOSSIBLE STATS
-- IF AFCON MATCH IS RELEVANT, INCLUDE IT
+- INCLUDE CURRENT SEASON 2024/25 STATS
+- IF AFCON MATCH IS RELEVANT (African player), INCLUDE IT
 
 JSON FORMAT:
 {
-  "name": "",
-  "position": "",
-  "club": "",
-  "nationality": "",
+  "name": "Short Name",
+  "fullName": "Full Legal Name",
+  "position": "Forward/Midfielder/Defender/Goalkeeper",
+  "detailedPosition": "Right Winger/Central Midfielder/etc",
+  "club": "Current Club",
+  "clubCountry": "Country of club",
+  "nationality": "Primary Nationality",
+  "secondNationality": null,
+  "dateOfBirth": "DD/MM/YYYY",
   "age": 0,
-  "height": "180cm",
-  "weight": "75kg",
-  "preferredFoot": "Right",
+  "birthplace": "City, Country",
   "shirtNumber": 10,
-  "marketValue": "€10M",
-  "contractUntil": "2026",
-  "imageQuery": "",
-  "stats": {
+  "marketValue": "€50M",
+  "contractUntil": "2027",
+  "agent": "Agent Name",
+  "imageQuery": "Player Name football player portrait",
+  "physical": {
+    "height": "180cm",
+    "weight": "75kg",
+    "preferredFoot": "Right/Left/Both",
+    "pace": 85,
+    "strength": 70,
+    "stamina": 80
+  },
+  "currentSeasonStats": {
     "appearances": 0,
     "minutesPlayed": 0,
     "goals": 0,
     "assists": 0,
     "shotsOnTarget": 0,
+    "shotsTotal": 0,
     "keyPasses": 0,
     "dribblesCompleted": 0,
+    "dribblesAttempted": 0,
     "tacklesWon": 0,
     "interceptions": 0,
     "duelsWon": 0,
+    "duelsTotal": 0,
     "foulsWon": 0,
-    "xG": 0,
-    "xA": 0,
-    "passAccuracy": 0,
+    "foulsConceded": 0,
+    "xG": 0.0,
+    "xA": 0.0,
+    "passAccuracy": 85,
+    "passesCompleted": 0,
+    "passesAttempted": 0,
     "rating": 7.0,
     "yellowCards": 0,
     "redCards": 0,
@@ -159,31 +231,109 @@ JSON FORMAT:
     "groundDuelsWon": 0,
     "blockedShots": 0,
     "clearances": 0,
-    "recoveries": 0
+    "recoveries": 0,
+    "goalsPerGame": 0.0,
+    "assistsPerGame": 0.0,
+    "minutesPerGoal": 0
   },
+  "recentSeasons": [
+    {
+      "season": "2023/24",
+      "competition": "League Name",
+      "appearances": 0,
+      "goals": 0,
+      "assists": 0,
+      "minutesPlayed": 0,
+      "rating": 7.0
+    }
+  ],
+  "careerStats": {
+    "totalAppearances": 0,
+    "totalGoals": 0,
+    "totalAssists": 0,
+    "trophiesWon": 0,
+    "internationalCaps": 0,
+    "internationalGoals": 0
+  },
+  "afconMatch": null,
+  "strengths": ["Dribbling", "Vision", "Finishing"],
+  "weaknesses": ["Aerial Duels", "Defensive Work"],
+  "playingStyle": "A creative attacking player known for..."
+}
+
+For African players, include AFCON match data if they participated:
+{
   "afconMatch": {
     "competition": "AFCON",
-    "match": "Algeria vs Guinea",
-    "minutesPlayed": 0,
-    "goals": 0,
+    "match": "Team A vs Team B",
+    "result": "2-1",
+    "minutesPlayed": 90,
+    "goals": 1,
     "assists": 0,
-    "shots": 0,
-    "shotsOnTarget": 0,
-    "keyPasses": 0,
-    "chancesCreated": 0,
-    "dribblesCompleted": 0,
-    "duelsWon": 0,
-    "tackles": 0,
+    "shots": 3,
+    "shotsOnTarget": 2,
+    "keyPasses": 2,
+    "chancesCreated": 1,
+    "dribblesCompleted": 4,
+    "duelsWon": 8,
+    "tackles": 1,
     "interceptions": 0,
-    "foulsWon": 0,
-    "passes": 0,
-    "passAccuracy": 0,
-    "xG": 0,
-    "xA": 0,
+    "foulsWon": 2,
+    "passes": 45,
+    "passAccuracy": 87,
+    "xG": 0.8,
+    "xA": 0.2,
     "manOfTheMatch": false
   }
 }
 `;
+
+// =====================================================
+// IMAGE SEARCH FUNCTION
+// =====================================================
+
+async function searchPlayerImage(playerName: string): Promise<string | null> {
+  try {
+    console.log("Searching for player image:", playerName);
+    
+    // Use the AI gateway to generate/find a player image
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image-preview",
+        messages: [
+          {
+            role: "user",
+            content: `Generate a professional portrait photo of a football player similar to ${playerName}. The image should show a male football player in a dynamic pose wearing a football kit, with stadium background. High quality, professional sports photography style.`
+          }
+        ],
+        modalities: ["image", "text"]
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Image generation failed:", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    if (imageUrl) {
+      console.log("Generated player image successfully");
+      return imageUrl;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Image search error:", error);
+    return null;
+  }
+}
 
 // =====================================================
 // MAIN HANDLER
@@ -212,6 +362,7 @@ serve(async (req: Request) => {
     }
 
     const query = body.query.trim();
+    const includeImage = body.includeImage !== false; // Default to true
 
     if (query.length < 2) {
       return new Response(
@@ -221,7 +372,7 @@ serve(async (req: Request) => {
     }
 
     // -------------------------------
-    // LOVABLE AI GATEWAY CALL
+    // LOVABLE AI GATEWAY CALL - Player Data
     // -------------------------------
     console.log("Calling Lovable AI Gateway for player:", query);
     
@@ -235,7 +386,7 @@ serve(async (req: Request) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Provide professional football data for: ${query}` }
+          { role: "user", content: `Provide comprehensive professional football data for: ${query}. Include current 2024/25 season stats, career totals, and recent seasons.` }
         ],
       }),
     });
@@ -267,15 +418,14 @@ serve(async (req: Request) => {
       throw new Error("Empty AI response");
     }
 
-    console.log("AI Response received:", raw.substring(0, 200));
+    console.log("AI Response received:", raw.substring(0, 300));
 
     // -------------------------------
     // JSON PARSE
     // -------------------------------
-    let parsed: PlayerResponse;
+    let parsed: any;
 
     try {
-      // Clean up potential markdown formatting
       let cleanJson = raw.trim();
       if (cleanJson.startsWith("```json")) {
         cleanJson = cleanJson.slice(7);
@@ -293,48 +443,101 @@ serve(async (req: Request) => {
     }
 
     // -------------------------------
-    // SANITIZATION — CORE PLAYER
+    // IMAGE SEARCH (parallel with data processing)
     // -------------------------------
+    let playerImageUrl: string | null = null;
+    if (includeImage) {
+      playerImageUrl = await searchPlayerImage(parsed.name || query);
+    }
+
+    // -------------------------------
+    // SANITIZATION — FULL PLAYER DATA
+    // -------------------------------
+    const stats = parsed.currentSeasonStats || parsed.stats || {};
+    
     const player: PlayerResponse = {
       name: safeString(parsed.name),
+      fullName: safeString(parsed.fullName, parsed.name),
       position: safeString(parsed.position),
+      detailedPosition: safeString(parsed.detailedPosition, parsed.position),
       club: safeString(parsed.club),
+      clubCountry: safeString(parsed.clubCountry),
       nationality: safeString(parsed.nationality),
+      secondNationality: parsed.secondNationality || null,
+      dateOfBirth: safeString(parsed.dateOfBirth),
       age: clamp(safeNumber(parsed.age), 15, 45),
-      height: safeString(parsed.height, "180cm"),
-      weight: safeString(parsed.weight, "75kg"),
-      preferredFoot: safeString(parsed.preferredFoot, "Right"),
+      birthplace: safeString(parsed.birthplace),
       shirtNumber: safeNumber(parsed.shirtNumber, 10),
       marketValue: safeString(parsed.marketValue, "€10M"),
       contractUntil: safeString(parsed.contractUntil, "2026"),
+      agent: safeString(parsed.agent, "Unknown"),
       imageQuery: safeString(parsed.imageQuery),
-      stats: {
-        appearances: safeNumber(parsed.stats?.appearances),
-        minutesPlayed: safeNumber(parsed.stats?.minutesPlayed),
-        goals: safeNumber(parsed.stats?.goals),
-        assists: safeNumber(parsed.stats?.assists),
-        shotsOnTarget: safeNumber(parsed.stats?.shotsOnTarget),
-        keyPasses: safeNumber(parsed.stats?.keyPasses),
-        dribblesCompleted: safeNumber(parsed.stats?.dribblesCompleted),
-        tacklesWon: safeNumber(parsed.stats?.tacklesWon),
-        interceptions: safeNumber(parsed.stats?.interceptions),
-        duelsWon: safeNumber(parsed.stats?.duelsWon),
-        foulsWon: safeNumber(parsed.stats?.foulsWon),
-        xG: safeNumber(parsed.stats?.xG),
-        xA: safeNumber(parsed.stats?.xA),
-        passAccuracy: clamp(safeNumber(parsed.stats?.passAccuracy, 80), 50, 100),
-        rating: clamp(safeNumber(parsed.stats?.rating, 7), 0, 10),
-        yellowCards: safeNumber(parsed.stats?.yellowCards),
-        redCards: safeNumber(parsed.stats?.redCards),
-        cleanSheets: safeNumber(parsed.stats?.cleanSheets),
-        aerialDuelsWon: safeNumber(parsed.stats?.aerialDuelsWon),
-        crossesCompleted: safeNumber(parsed.stats?.crossesCompleted),
-        longBallsCompleted: safeNumber(parsed.stats?.longBallsCompleted),
-        groundDuelsWon: safeNumber(parsed.stats?.groundDuelsWon),
-        blockedShots: safeNumber(parsed.stats?.blockedShots),
-        clearances: safeNumber(parsed.stats?.clearances),
-        recoveries: safeNumber(parsed.stats?.recoveries),
+      imageUrl: playerImageUrl,
+      physical: {
+        height: safeString(parsed.physical?.height, "180cm"),
+        weight: safeString(parsed.physical?.weight, "75kg"),
+        preferredFoot: safeString(parsed.physical?.preferredFoot, "Right"),
+        pace: clamp(safeNumber(parsed.physical?.pace, 70), 1, 99),
+        strength: clamp(safeNumber(parsed.physical?.strength, 70), 1, 99),
+        stamina: clamp(safeNumber(parsed.physical?.stamina, 70), 1, 99),
       },
+      currentSeasonStats: {
+        appearances: safeNumber(stats.appearances),
+        minutesPlayed: safeNumber(stats.minutesPlayed),
+        goals: safeNumber(stats.goals),
+        assists: safeNumber(stats.assists),
+        shotsOnTarget: safeNumber(stats.shotsOnTarget),
+        shotsTotal: safeNumber(stats.shotsTotal),
+        keyPasses: safeNumber(stats.keyPasses),
+        dribblesCompleted: safeNumber(stats.dribblesCompleted),
+        dribblesAttempted: safeNumber(stats.dribblesAttempted),
+        tacklesWon: safeNumber(stats.tacklesWon),
+        interceptions: safeNumber(stats.interceptions),
+        duelsWon: safeNumber(stats.duelsWon),
+        duelsTotal: safeNumber(stats.duelsTotal),
+        foulsWon: safeNumber(stats.foulsWon),
+        foulsConceded: safeNumber(stats.foulsConceded),
+        xG: safeNumber(stats.xG),
+        xA: safeNumber(stats.xA),
+        passAccuracy: clamp(safeNumber(stats.passAccuracy, 80), 50, 100),
+        passesCompleted: safeNumber(stats.passesCompleted),
+        passesAttempted: safeNumber(stats.passesAttempted),
+        rating: clamp(safeNumber(stats.rating, 7), 0, 10),
+        yellowCards: safeNumber(stats.yellowCards),
+        redCards: safeNumber(stats.redCards),
+        cleanSheets: safeNumber(stats.cleanSheets),
+        aerialDuelsWon: safeNumber(stats.aerialDuelsWon),
+        crossesCompleted: safeNumber(stats.crossesCompleted),
+        longBallsCompleted: safeNumber(stats.longBallsCompleted),
+        groundDuelsWon: safeNumber(stats.groundDuelsWon),
+        blockedShots: safeNumber(stats.blockedShots),
+        clearances: safeNumber(stats.clearances),
+        recoveries: safeNumber(stats.recoveries),
+        goalsPerGame: safeNumber(stats.goalsPerGame),
+        assistsPerGame: safeNumber(stats.assistsPerGame),
+        minutesPerGoal: safeNumber(stats.minutesPerGoal),
+      },
+      recentSeasons: safeArray(parsed.recentSeasons).slice(0, 5).map((s: any) => ({
+        season: safeString(s.season),
+        competition: safeString(s.competition),
+        appearances: safeNumber(s.appearances),
+        goals: safeNumber(s.goals),
+        assists: safeNumber(s.assists),
+        minutesPlayed: safeNumber(s.minutesPlayed),
+        rating: clamp(safeNumber(s.rating, 7), 0, 10),
+      })),
+      careerStats: {
+        totalAppearances: safeNumber(parsed.careerStats?.totalAppearances),
+        totalGoals: safeNumber(parsed.careerStats?.totalGoals),
+        totalAssists: safeNumber(parsed.careerStats?.totalAssists),
+        trophiesWon: safeNumber(parsed.careerStats?.trophiesWon),
+        internationalCaps: safeNumber(parsed.careerStats?.internationalCaps),
+        internationalGoals: safeNumber(parsed.careerStats?.internationalGoals),
+      },
+      afconMatch: null,
+      strengths: safeArray(parsed.strengths).slice(0, 5).map(s => safeString(s)),
+      weaknesses: safeArray(parsed.weaknesses).slice(0, 3).map(s => safeString(s)),
+      playingStyle: safeString(parsed.playingStyle),
     };
 
     // -------------------------------
@@ -345,7 +548,8 @@ serve(async (req: Request) => {
 
       player.afconMatch = {
         competition: "AFCON",
-        match: safeString(m.match, "Algeria vs Guinea"),
+        match: safeString(m.match, "Match"),
+        result: safeString(m.result, "0-0"),
         minutesPlayed: safeNumber(m.minutesPlayed),
         goals: safeNumber(m.goals),
         assists: safeNumber(m.assists),
@@ -364,11 +568,9 @@ serve(async (req: Request) => {
         xA: safeNumber(m.xA),
         manOfTheMatch: Boolean(m.manOfTheMatch),
       };
-    } else {
-      player.afconMatch = null;
     }
 
-    console.log("Returning player data:", player.name);
+    console.log("Returning enhanced player data:", player.name, "with image:", !!playerImageUrl);
 
     return new Response(JSON.stringify(player), {
       status: 200,

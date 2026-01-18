@@ -19,6 +19,7 @@ import { HorizontalToolbar } from './HorizontalToolbar';
 import { DataTable } from './DataTable';
 import AIPlayerSearch from './AIPlayerSearch';
 import { FontSelector } from './FontSelector';
+import { CanvasOverlays } from './CanvasOverlays';
 import { removeBackground, loadImage } from '@/lib/backgroundRemoval';
 import { useTheme, fontCombinations } from '@/contexts/ThemeContext';
 import { Table } from 'lucide-react';
@@ -1297,7 +1298,8 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
                 [data-canvas-fonts] .font-heading { font-family: var(--font-heading); }
               `}</style>
               <div data-canvas-fonts className="absolute inset-0">
-
+                {/* Canvas Overlays for professional look */}
+                <CanvasOverlays variant="gradient-frame" />
             {/* Header */}
             <HeaderBanner
               {...state.header}

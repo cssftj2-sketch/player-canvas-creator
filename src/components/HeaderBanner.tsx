@@ -45,7 +45,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
   return (
     <Rnd
       position={position}
-      size={{ width: 280, height: 60 }}
+      size={{ width: 320, height: 80 }}
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
@@ -57,43 +57,73 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
+        {/* Decorative line accent */}
         <div 
-          className="py-1 px-4 inline-block skew-x-[-5deg]"
-          style={{ backgroundColor: 'var(--theme-secondary)' }}
-        >
-          {isEditing ? (
-            <input
-              type="text"
-              value={editSubtitle}
-              onChange={(e) => setEditSubtitle(e.target.value)}
-              onBlur={handleBlur}
-              autoFocus
-              className="bg-transparent text-xs font-heading uppercase text-white outline-none border-b border-current tracking-wider"
-            />
-          ) : (
-            <span className="text-xs font-heading uppercase text-white tracking-wider">
-              {subtitle}
-            </span>
-          )}
-        </div>
+          className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-12"
+          style={{ background: 'var(--theme-primary)' }}
+        />
+        
+        {/* Subtitle banner */}
         <div 
-          className="py-2 px-4 -mt-1 skew-x-[-5deg]"
-          style={{ backgroundColor: 'var(--theme-primary)' }}
+          className="relative py-1.5 px-5 inline-block skew-x-[-8deg] shadow-lg"
+          style={{ 
+            background: `linear-gradient(135deg, var(--theme-secondary), color-mix(in srgb, var(--theme-secondary) 80%, black))`,
+            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          }}
         >
-          {isEditing ? (
-            <input
-              type="text"
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              onBlur={handleBlur}
-              className="bg-transparent text-xl font-display text-white outline-none border-b border-current tracking-wide"
-            />
-          ) : (
-            <span className="text-xl font-display text-white tracking-wide">
-              {title}
-            </span>
-          )}
+          <div className="skew-x-[8deg]">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editSubtitle}
+                onChange={(e) => setEditSubtitle(e.target.value)}
+                onBlur={handleBlur}
+                autoFocus
+                className="bg-transparent text-xs font-heading uppercase text-white outline-none border-b border-current tracking-widest"
+              />
+            ) : (
+              <span className="text-xs font-heading uppercase text-white tracking-widest drop-shadow-sm">
+                {subtitle}
+              </span>
+            )}
+          </div>
         </div>
+        
+        {/* Title banner */}
+        <div 
+          className="relative py-3 px-6 -mt-1 skew-x-[-8deg] shadow-xl"
+          style={{ 
+            background: `linear-gradient(135deg, var(--theme-primary), color-mix(in srgb, var(--theme-primary) 85%, black))`,
+            boxShadow: '0 6px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+          }}
+        >
+          <div className="skew-x-[8deg]">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onBlur={handleBlur}
+                className="bg-transparent text-2xl font-display text-white outline-none border-b border-current tracking-wide"
+              />
+            ) : (
+              <span className="text-2xl font-display text-white tracking-wide drop-shadow-md">
+                {title}
+              </span>
+            )}
+          </div>
+          {/* Shine effect */}
+          <div 
+            className="absolute inset-0 opacity-20"
+            style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.3), transparent 50%)' }}
+          />
+        </div>
+        
+        {/* Bottom accent dot */}
+        <div 
+          className="absolute -bottom-1 right-4 w-2 h-2 rounded-full"
+          style={{ background: 'var(--theme-secondary)' }}
+        />
       </div>
     </Rnd>
   );

@@ -53,7 +53,7 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
   return (
     <Rnd
       position={position}
-      size={{ width: 120, height: 100 }}
+      size={{ width: 120, height: 110 }}
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
@@ -61,20 +61,37 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
       className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-lg' : ''}`}
     >
       <div
-        className="w-full h-full relative hover:ring-2 ring-amber-500/30 rounded-lg transition-all"
+        className="w-full h-full relative hover:ring-2 ring-amber-500/30 rounded-xl transition-all overflow-hidden"
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
-        {/* Background */}
+        {/* Background with gradient */}
         <div 
-          className="absolute inset-0 rounded-lg opacity-90" 
+          className="absolute inset-0 rounded-xl" 
           style={{ 
-            background: `linear-gradient(to bottom right, ${bgColor}, ${bgColor}cc)` 
+            background: `linear-gradient(145deg, ${bgColor}, color-mix(in srgb, ${bgColor} 70%, black))`,
+            boxShadow: `0 8px 32px ${bgColor}40, inset 0 1px 0 rgba(255,255,255,0.2)`,
+          }}
+        />
+        
+        {/* Shine overlay */}
+        <div 
+          className="absolute inset-0 rounded-xl"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.2) 100%)',
+          }}
+        />
+        
+        {/* Diamond pattern accent */}
+        <div 
+          className="absolute top-0 right-0 w-16 h-16 opacity-10"
+          style={{
+            background: `repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.5) 4px, rgba(255,255,255,0.5) 8px)`,
           }}
         />
         
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center p-2">
+        <div className="relative z-10 h-full flex flex-col items-center justify-center p-3">
           {isEditing ? (
             <div className="flex flex-col items-center gap-1">
               <input
@@ -82,7 +99,7 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
                 className="w-24 text-center bg-transparent text-xs font-heading uppercase outline-none border-b border-current"
-                style={{ color: textColor || 'rgba(255,255,255,0.8)' }}
+                style={{ color: textColor || 'rgba(255,255,255,0.9)' }}
               />
               <input
                 type="text"
@@ -90,27 +107,41 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
                 onChange={(e) => setEditValue(e.target.value)}
                 onBlur={handleBlur}
                 autoFocus
-                className="w-16 text-center bg-transparent text-4xl font-display outline-none border-b border-current"
+                className="w-16 text-center bg-transparent text-5xl font-display outline-none border-b border-current"
                 style={{ color: numberColor || '#FFFFFF' }}
               />
             </div>
           ) : (
             <>
               <span 
-                className="text-xs font-heading uppercase tracking-wider"
-                style={{ color: textColor || 'rgba(255,255,255,0.8)' }}
+                className="text-[10px] font-heading uppercase tracking-widest mb-1"
+                style={{ color: textColor || 'rgba(255,255,255,0.85)' }}
               >
                 {label}
               </span>
               <span 
-                className="text-4xl font-display leading-none"
-                style={{ color: numberColor || '#FFFFFF' }}
+                className="text-5xl font-display leading-none drop-shadow-lg"
+                style={{ 
+                  color: numberColor || '#FFFFFF',
+                  textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                }}
               >
                 {value}
               </span>
+              {/* Underline accent */}
+              <div 
+                className="w-8 h-0.5 mt-2 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.4)' }}
+              />
             </>
           )}
         </div>
+        
+        {/* Bottom corner accent */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 h-1 opacity-60"
+          style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent)' }}
+        />
       </div>
     </Rnd>
   );

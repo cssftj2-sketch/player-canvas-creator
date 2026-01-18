@@ -50,10 +50,12 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
     onSelect(id);
   };
 
+  const accentColor = customColor || 'var(--theme-primary)';
+  
   return (
     <Rnd
       position={position}
-      size={{ width: 100, height: 80 }}
+      size={{ width: 100, height: 85 }}
       onDragStop={(e, d) => onPositionChange(id, { x: d.x, y: d.y })}
       enableResizing={false}
       bounds="parent"
@@ -61,10 +63,19 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
       className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-lg' : ''}`}
     >
       <div
-        className="w-full h-full flex flex-col items-center justify-center hover:ring-2 ring-amber-500/30 rounded-lg transition-all bg-neutral-900/40 backdrop-blur-sm border border-neutral-700/50 p-2"
+        className="relative w-full h-full flex flex-col items-center justify-center hover:ring-2 ring-amber-500/30 rounded-lg transition-all bg-gradient-to-br from-neutral-900/90 via-neutral-800/80 to-neutral-900/90 backdrop-blur-sm border border-neutral-700/50 p-2 overflow-hidden"
+        style={{
+          boxShadow: `0 4px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
+        }}
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
+        {/* Top accent line */}
+        <div 
+          className="absolute top-0 left-2 right-2 h-0.5 rounded-full"
+          style={{ background: `linear-gradient(to right, transparent, ${accentColor}, transparent)` }}
+        />
+        
         {isEditing ? (
           <div className="flex flex-col items-center gap-1">
             <input
@@ -73,7 +84,8 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={handleBlur}
               autoFocus
-              className="w-16 text-center bg-transparent text-2xl font-display text-amber-500 outline-none border-b border-current"
+              className="w-16 text-center bg-transparent text-2xl font-display outline-none border-b"
+              style={{ color: accentColor, borderColor: accentColor }}
             />
             <input
               type="text"
@@ -86,24 +98,33 @@ export const MiniStatBox: React.FC<MiniStatBoxProps> = ({
         ) : (
           <>
             <span 
-              className="text-2xl font-display"
-              style={{ color: numberColor || customColor || 'var(--theme-primary)' }}
+              className="text-3xl font-display leading-none drop-shadow-sm"
+              style={{ 
+                color: numberColor || accentColor,
+                textShadow: `0 0 20px ${accentColor}30`,
+              }}
             >
               {value}
             </span>
             <span 
-              className="text-[10px] uppercase font-heading tracking-wider"
-              style={{ color: textColor || 'rgba(255,255,255,0.7)' }}
+              className="text-[10px] uppercase font-heading tracking-widest mt-1"
+              style={{ color: textColor || 'rgba(255,255,255,0.8)' }}
             >
               {label}
             </span>
             {sublabel && (
-              <span className="text-[8px] text-neutral-500 uppercase">
+              <span className="text-[8px] text-neutral-400 uppercase tracking-wide">
                 {sublabel}
               </span>
             )}
           </>
         )}
+        
+        {/* Bottom corner accent */}
+        <div 
+          className="absolute bottom-1 right-1 w-2 h-2 rounded-sm opacity-40"
+          style={{ background: accentColor }}
+        />
       </div>
     </Rnd>
   );

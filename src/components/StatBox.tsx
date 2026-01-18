@@ -50,6 +50,8 @@ export const StatBox: React.FC<StatBoxProps> = ({
     onSelect(id);
   };
 
+  const boxColor = customColor || 'var(--theme-primary)';
+  
   return (
     <Rnd
       position={position}
@@ -61,10 +63,36 @@ export const StatBox: React.FC<StatBoxProps> = ({
       className={`cursor-move ${isSelected ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-neutral-900 rounded-lg' : ''}`}
     >
       <div
-        className="w-full h-full bg-neutral-900/80 border-2 border-neutral-700 rounded-lg p-3 flex flex-col items-center justify-center hover:ring-2 ring-amber-500/30 transition-all"
+        className="relative w-full h-full bg-gradient-to-br from-neutral-900/95 via-neutral-800/90 to-neutral-900/95 border-2 rounded-lg p-3 flex flex-col items-center justify-center hover:ring-2 ring-amber-500/30 transition-all overflow-hidden"
+        style={{
+          borderColor: `${boxColor}60`,
+          boxShadow: `0 4px 20px ${boxColor}15, inset 0 1px 0 rgba(255,255,255,0.05)`,
+        }}
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
       >
+        {/* Corner accents */}
+        <div 
+          className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2"
+          style={{ borderColor: boxColor }}
+        />
+        <div 
+          className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2"
+          style={{ borderColor: boxColor }}
+        />
+        <div 
+          className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2"
+          style={{ borderColor: boxColor }}
+        />
+        <div 
+          className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2"
+          style={{ borderColor: boxColor }}
+        />
+        {/* Subtle gradient overlay */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{ background: `linear-gradient(135deg, ${boxColor}20, transparent 50%)` }}
+        />
         {isEditing ? (
           <div className="flex flex-col items-center gap-1">
             <input

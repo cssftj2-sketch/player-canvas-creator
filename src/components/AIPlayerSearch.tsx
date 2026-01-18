@@ -1,3 +1,4 @@
+// Updated AIPlayerSearch.tsx with enhanced Playing Style display
 import React, { useState } from "react";
 import {
   Search,
@@ -20,7 +21,7 @@ import {
   BarChart3,
   Footprints,
   Shield,
-  Image,
+  FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -159,7 +160,7 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'career'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'career' | 'style'>('overview');
 
   /* =====================================================
      SEARCH HANDLER
@@ -224,7 +225,7 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
     if (!playerData) return;
     onPlayerSelect(playerData);
     toast.success("Player data applied to canvas!", {
-      description: "All stats have been placed in their positions",
+      description: "All stats including playing style have been placed",
     });
     setPlayerData(null);
     setSearchQuery("");
@@ -329,7 +330,7 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
 
           {/* TABS */}
           <div className="flex border-b border-neutral-700">
-            {(['overview', 'stats', 'career'] as const).map((tab) => (
+            {(['overview', 'stats', 'career', 'style'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -339,7 +340,14 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab === 'style' ? (
+                  <span className="flex items-center justify-center gap-1">
+                    <FileText className="w-3 h-3" />
+                    Style
+                  </span>
+                ) : (
+                  tab.charAt(0).toUpperCase() + tab.slice(1)
+                )}
               </button>
             ))}
           </div>
@@ -392,16 +400,6 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
                     ))}
                   </div>
                 </div>
-
-                {/* Playing Style */}
-                {playerData.playingStyle && (
-                  <div className="space-y-1">
-                    <div className="text-xs font-medium text-neutral-300">Playing Style</div>
-                    <p className="text-[11px] text-neutral-400 leading-relaxed">
-                      {playerData.playingStyle}
-                    </p>
-                  </div>
-                )}
 
                 {/* Strengths & Weaknesses */}
                 <div className="grid grid-cols-2 gap-2">
@@ -584,6 +582,65 @@ const AIPlayerSearch: React.FC<AIPlayerSearchProps> = ({
                   <div className="p-2 bg-neutral-800 rounded">
                     <div className="text-neutral-500">Market Value</div>
                     <div className="text-neutral-200 font-medium">{playerData.marketValue}</div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'style' && (
+              <>
+                {/* Playing Style Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-medium text-amber-400">
+                    <FileText className="w-4 h-4" />
+                    <span>Playing Style Analysis</span>
+                  </div>
+                  
+                  {playerData.playingStyle ? (
+                    <div className="bg-neutral-800/50 border border-neutral-700 rounded-md p-3">
+                      <p className="text-xs text-neutral-300 leading-relaxed">
+                        {playerData.playingStyle}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-neutral-800/50 border border-neutral-700 rounded-md p-3 text-center">
+                      <p className="text-xs text-neutral-500 italic">
+                        No playing style information available
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Style Highlights */}
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-md p-2">
+                      <div className="text-xs font-medium text-emerald-400 mb-1">Key Attributes</div>
+                      <div className="flex flex-wrap gap-1">
+                        {playerData.strengths.slice(0, 3).map((s, i) => (
+                          <span key={i} className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-[10px]">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-2">
+                      <div className="text-xs font-medium text-amber-400 mb-1">Position</div>
+                      <div className="text-xs text-amber-300 font-semibold">
+                        {playerData.detailedPosition}
+                      </div>
+                      <div className="text-[10px] text-neutral-400 mt-0.5">
+                        Primary: {playerData.position}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info Note */}
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-md p-2 mt-2">
+                    <div className="flex gap-2 items-start">
+                      <AlertCircle className="w-3 h-3 text-blue-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-blue-300">
+                        This playing style description will be automatically placed in the text description box on your canvas when you apply player data.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </>

@@ -15,6 +15,7 @@ import { ProgressBar } from './ProgressBar';
 import { Divider } from './Divider';
 import { IconBadge, IconType } from './IconBadge';
 import { TextLabel } from './TextLabel';
+import { TextDescription } from './TextDescription';
 import { HorizontalToolbar } from './HorizontalToolbar';
 import { DataTable } from './DataTable';
 import AIPlayerSearch from './AIPlayerSearch';
@@ -99,6 +100,16 @@ interface TextLabelState extends BaseComponent {
   customColor?: string;
 }
 
+interface TextDescriptionState extends BaseComponent {
+  text: string;
+  size: Size;
+  fontSize: number;
+  lineHeight: number;
+  textAlign: 'left' | 'center' | 'right';
+  customColor?: string;
+  customBgColor?: string;
+}
+
 interface ChartState extends BaseComponent {
   data: { value: number }[];
   title: string;
@@ -152,6 +163,7 @@ interface TemplateState {
   dividers: DividerState[];
   iconBadges: IconBadgeState[];
   textLabels: TextLabelState[];
+  textDescriptions: TextDescriptionState[];
 }
 
 // Constants
@@ -231,6 +243,18 @@ const initialState: TemplateState = {
   dividers: [],
   iconBadges: [],
   textLabels: [],
+  textDescriptions: [
+    {
+      id: 'description1',
+      text: 'A dynamic attacking midfielder known for creativity and technical ability...',
+      position: { x: 30, y: 750 },
+      size: { width: 300, height: 80 },
+      fontSize: 11,
+      lineHeight: 1.5,
+      textAlign: 'left',
+      zIndex: 10
+    }
+  ],
 };
 
 // Component configuration - maps ALL possible toolbar button IDs
@@ -273,6 +297,11 @@ const COMPONENT_CONFIGS: Record<string, { type: keyof TemplateState; defaults: a
   'label': { type: 'textLabels', defaults: { text: 'Label', fontSize: 20, fontWeight: 'normal', color: 'gold' } },
   'heading': { type: 'textLabels', defaults: { text: 'Heading', fontSize: 32, fontWeight: 'bold', color: 'gold' } },
   
+  // Text Descriptions - all possible variants
+  'text-description': { type: 'textDescriptions', defaults: { text: 'Double-click to edit description...', size: { width: 300, height: 100 }, fontSize: 11, lineHeight: 1.5, textAlign: 'left' } },
+  'description': { type: 'textDescriptions', defaults: { text: 'Description text...', size: { width: 300, height: 100 }, fontSize: 11, lineHeight: 1.5, textAlign: 'left' } },
+  'text-box': { type: 'textDescriptions', defaults: { text: 'Text box...', size: { width: 250, height: 80 }, fontSize: 12, lineHeight: 1.4, textAlign: 'left' } },
+  
   // Chart - now supports multiple instances
   'line-chart': { type: 'charts', defaults: { data: [{ value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, { value: -2 }, { value: 6 }, { value: 4 }, { value: -5 }, { value: 7 }, { value: 3 }, { value: -1 }, { value: 4 }], title: 'PERFORMANCE' } },
   'chart': { type: 'charts', defaults: { data: [{ value: 2 }, { value: -3 }, { value: 5 }, { value: 8 }, { value: -2 }, { value: 6 }, { value: 4 }, { value: -5 }, { value: 7 }, { value: 3 }, { value: -1 }, { value: 4 }], title: 'PERFORMANCE' } },
@@ -305,6 +334,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       ...state.dividers.map(d => d.zIndex || 0),
       ...state.iconBadges.map(i => i.zIndex || 0),
       ...state.textLabels.map(t => t.zIndex || 0),
+      ...state.textDescriptions.map(td => td.zIndex || 0),
       state.playerName.zIndex || 0,
       ...state.charts.map(c => c.zIndex || 0),
       state.playerImage.zIndex || 0,
@@ -351,7 +381,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     if (!selectedComponent) return;
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
-    // Need to call setState directly to update zIndex
     setState(prev => {
       const updateZIndex = (items: any[], id: string) => 
         items.map(item => item.id === id ? { ...item, zIndex: newZ } : item);
@@ -379,6 +408,9 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       }
       if (prev.textLabels.find(t => t.id === selectedComponent)) {
         return { ...prev, textLabels: updateZIndex(prev.textLabels, selectedComponent) };
+      }
+      if (prev.textDescriptions.find(td => td.id === selectedComponent)) {
+        return { ...prev, textDescriptions: updateZIndex(prev.textDescriptions, selectedComponent) };
       }
       if (selectedComponent === 'playerName') {
         return { ...prev, playerName: { ...prev.playerName, zIndex: newZ } };
@@ -427,6 +459,9 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       }
       if (prev.textLabels.find(t => t.id === selectedComponent)) {
         return { ...prev, textLabels: updateZIndex(prev.textLabels, selectedComponent) };
+      }
+      if (prev.textDescriptions.find(td => td.id === selectedComponent)) {
+        return { ...prev, textDescriptions: updateZIndex(prev.textDescriptions, selectedComponent) };
       }
       if (selectedComponent === 'playerName') {
         return { ...prev, playerName: { ...prev.playerName, zIndex: newZ } };
@@ -517,7 +552,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         // Update chart with performance data
         charts: prev.charts.map((chart, idx) => {
           if (idx === 0) {
-            // Generate performance data based on stats
             const performanceData = [
               { value: stats?.goals ?? 0 },
               { value: stats?.assists ?? 0 },
@@ -539,6 +573,16 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
             };
           }
           return chart;
+        }),
+        // Update text descriptions with playing style
+        textDescriptions: prev.textDescriptions.map((desc, idx) => {
+          if (idx === 0 && playerData.playingStyle) {
+            return {
+              ...desc,
+              text: playerData.playingStyle,
+            };
+          }
+          return desc;
         }),
       }));
       
@@ -673,6 +717,20 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         color: text.color,
         customColor: text.customColor,
         zIndex: text.zIndex,
+        canDelete: true,
+      };
+    }
+
+    const description = state.textDescriptions.find(td => td.id === selectedComponent);
+    if (description) {
+      return {
+        id: description.id,
+        type: 'textDescription',
+        value: description.text,
+        fontSize: description.fontSize,
+        customColor: description.customColor,
+        customBgColor: description.customBgColor,
+        zIndex: description.zIndex,
         canDelete: true,
       };
     }
@@ -901,6 +959,23 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         return { ...prev, textLabels: updated };
       }
 
+      // Handle textDescriptions
+      const descIdx = prev.textDescriptions.findIndex(td => td.id === selectedComponent);
+      if (descIdx !== -1) {
+        const updated = [...prev.textDescriptions];
+        const oldDesc = updated[descIdx];
+        updated[descIdx] = { 
+          ...oldDesc,
+          text: data.value !== undefined ? data.value : oldDesc.text,
+          fontSize: data.fontSize !== undefined ? data.fontSize : oldDesc.fontSize,
+          customColor: data.customColor !== undefined ? data.customColor : oldDesc.customColor,
+          customBgColor: data.customBgColor !== undefined ? data.customBgColor : oldDesc.customBgColor,
+          zIndex: data.zIndex !== undefined ? data.zIndex : oldDesc.zIndex,
+        };
+        console.log('Updated textDescription:', updated[descIdx]);
+        return { ...prev, textDescriptions: updated };
+      }
+
       // Handle charts
       const chartIdx = prev.charts.findIndex(c => c.id === selectedComponent);
       if (chartIdx !== -1) {
@@ -941,7 +1016,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
   const handleDeleteComponent = useCallback(() => {
     if (!selectedComponent) return;
 
-    // Prevent deletion of unique components
     const nonDeletableComponents = ['playerName', 'header', 'rating', 'playerImage'];
     if (nonDeletableComponents.includes(selectedComponent)) {
       console.log('Cannot delete this component - it is a unique element');
@@ -957,6 +1031,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       dividers: prev.dividers.filter(d => d.id !== selectedComponent),
       iconBadges: prev.iconBadges.filter(i => i.id !== selectedComponent),
       textLabels: prev.textLabels.filter(t => t.id !== selectedComponent),
+      textDescriptions: prev.textDescriptions.filter(td => td.id !== selectedComponent),
       charts: prev.charts.filter(c => c.id !== selectedComponent),
     }));
     setSelectedComponent(null);
@@ -1066,6 +1141,13 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     }));
   }, []);
 
+  const handleTextDescriptionChange = useCallback((id: string, text: string) => {
+    setState(prev => ({
+      ...prev,
+      textDescriptions: prev.textDescriptions.map(td => td.id === id ? { ...td, text } : td),
+    }));
+  }, []);
+
   const handleImageUpload = useCallback((shouldRemoveBackground: boolean = true) => {
     setRemoveBackgroundEnabled(shouldRemoveBackground);
     fileInputRef.current?.click();
@@ -1073,7 +1155,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
 
   const processImage = useCallback(async (file: File, shouldRemoveBackground: boolean) => {
     try {
-      // Revoke previous URL if exists
       if (imageUrlRef.current) {
         URL.revokeObjectURL(imageUrlRef.current);
         imageUrlRef.current = null;
@@ -1127,14 +1208,12 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       console.error('Invalid file type');
       e.target.value = '';
       return;
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       console.error('File too large');
       e.target.value = '';
@@ -1150,20 +1229,17 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
     const newZ = maxZIndex + 1;
     setMaxZIndex(newZ);
     
-    // Handle data table separately
     if (componentId === 'data-table') {
       setShowDataTable(true);
       return;
     }
 
-    // Handle special single components (can't be duplicated)
     const singleComponents = ['player-name', 'header', 'chart', 'line-chart', 'rating', 'player-image'];
     if (singleComponents.includes(componentId)) {
       console.log(`${componentId} already exists - cannot add duplicate`);
       return;
     }
 
-    // Handle icon components
     if (componentId.startsWith('icon-')) {
       const iconType = componentId.replace('icon-', '') as IconType;
       setState(prev => ({
@@ -1181,10 +1257,8 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
       return;
     }
 
-    // Handle configured components
     const config = COMPONENT_CONFIGS[componentId];
     if (config) {
-      
       const newId = `${config.type}-${Date.now()}`;
       setState(prev => ({
         ...prev,
@@ -1209,20 +1283,17 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
   return (
     <div className={`relative w-full min-h-screen flex flex-col ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
       
-      {/* Horizontal Toolbar */}
       <div className="w-full" style={{ overflow: 'visible' }}>
         <HorizontalToolbar onAddComponent={handleAddComponent} />
       </div>
 
       <div className="flex flex-1">
-        {/* Left Sidebar */}
         <aside className={`w-64 p-3 flex flex-col gap-2.5 bg-neutral-900/80 border-neutral-800 shrink-0 ${isRTL ? 'border-l' : 'border-r'}`}>
           <ThemeSwitcher />
           <FontSelector />
           <AIPlayerSearch onPlayerSelect={handlePlayerSelect} />
           <BackgroundEditor />
           
-          {/* Data Table Button */}
           <button
             onClick={() => setShowDataTable(true)}
             className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700 rounded-lg transition-colors text-sm text-neutral-200"
@@ -1235,9 +1306,7 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
           <ExportControls canvasRef={canvasRef} />
         </aside>
 
-        {/* Main Canvas Area */}
         <div className="flex-1 flex flex-col">
-          {/* Zoom Controls */}
           <div className="flex items-center justify-center gap-2 py-2 bg-neutral-900/50 border-b border-neutral-800">
             <button
               onClick={() => setZoomLevel(Math.max(0.5, zoomLevel - 0.1))}
@@ -1272,7 +1341,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               aria-label="Upload player image"
             />
             
-            {/* Canvas - Theme and Font applied only here */}
             <div 
               ref={canvasRef}
               className={`relative overflow-hidden theme-${colorTheme}`}
@@ -1287,7 +1355,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               role="application"
               aria-label="Player stats design canvas"
             >
-              {/* Font style wrapper - applies font CSS vars only to canvas content */}
               <style>{`
                 [data-canvas-fonts] {
                   --font-display: ${fontCombinations[fontCombination].display};
@@ -1298,9 +1365,8 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
                 [data-canvas-fonts] .font-heading { font-family: var(--font-heading); }
               `}</style>
               <div data-canvas-fonts className="absolute inset-0">
-                {/* Canvas Overlays for professional look */}
                 <CanvasOverlays variant="gradient-frame" />
-            {/* Header */}
+            
             <HeaderBanner
               {...state.header}
               onPositionChange={(id, pos) => updatePosition('header', id, pos)}
@@ -1309,7 +1375,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               isSelected={selectedComponent === state.header.id}
             />
 
-            {/* Player Image */}
             <PlayerImage
               {...state.playerImage}
               onPositionChange={(id, pos) => updatePosition('playerImage', id, pos)}
@@ -1323,7 +1388,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               onToggleRemoveBackground={() => setRemoveBackgroundEnabled(!removeBackgroundEnabled)}
             />
 
-            {/* Stat Circles */}
             {state.circles.map(circle => (
               <StatCircle
                 key={`${circle.id}-${colorTheme}`}
@@ -1335,7 +1399,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
 
-            {/* Stat Boxes */}
             {state.boxes.map(box => (
               <StatBox
                 key={`${box.id}-${colorTheme}`}
@@ -1347,7 +1410,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
 
-            {/* Player Name */}
             <PlayerName
               key={`playerName-${colorTheme}`}
               {...state.playerName}
@@ -1357,7 +1419,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               isSelected={selectedComponent === state.playerName.id}
             />
 
-            {/* Performance Charts */}
             {state.charts.map(chart => (
               <PerformanceChart
                 key={`${chart.id}-${colorTheme}`}
@@ -1371,7 +1432,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
 
-            {/* Mini Stats */}
             {state.miniStats.map(stat => (
               <MiniStatBox
                 key={`${stat.id}-${colorTheme}`}
@@ -1383,7 +1443,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
 
-            {/* Rating Badge */}
             <RatingBadge
               key={`rating-${colorTheme}`}
               {...state.rating}
@@ -1393,7 +1452,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               isSelected={selectedComponent === state.rating.id}
             />
 
-            {/* Progress Bars */}
             {state.progressBars.map(bar => (
               <ProgressBar
                 key={`${bar.id}-${colorTheme}`}
@@ -1406,7 +1464,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
 
-            {/* Dividers */}
             {state.dividers.map(divider => (
               <Divider
                 key={`${divider.id}-${colorTheme}`}
@@ -1418,7 +1475,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
 
-            {/* Icon Badges */}
             {state.iconBadges.map(icon => (
               <IconBadge
                 key={`${icon.id}-${colorTheme}`}
@@ -1429,7 +1485,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
               />
             ))}
 
-            {/* Text Labels */}
             {state.textLabels.map(text => (
               <TextLabel
                 key={`${text.id}-${colorTheme}`}
@@ -1438,6 +1493,18 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
                 onValueChange={handleTextLabelChange}
                 onSelect={handleSelectComponent}
                 isSelected={selectedComponent === text.id}
+              />
+            ))}
+
+            {state.textDescriptions.map(desc => (
+              <TextDescription
+                key={`${desc.id}-${colorTheme}`}
+                {...desc}
+                onPositionChange={(id, pos) => updatePosition('textDescriptions', id, pos)}
+                onSizeChange={(id, size) => updateSize('textDescriptions', id, size)}
+                onValueChange={handleTextDescriptionChange}
+                onSelect={handleSelectComponent}
+                isSelected={selectedComponent === desc.id}
               />
             ))}
             </div>
@@ -1458,7 +1525,6 @@ export const TemplateCanvas = React.forwardRef<HTMLDivElement>((props, ref) => {
         )}
       </div>
 
-      {/* Data Table Modal */}
       {showDataTable && (
         <DataTable 
           onDataChange={handleDataTableChange}
